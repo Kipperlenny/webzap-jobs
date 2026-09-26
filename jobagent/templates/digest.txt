@@ -1,0 +1,14 @@
+Daily job scan – {{ today }}
+{{ profile_name }}
+Strong: {{ counts.strong }} · Possible: {{ counts.possible }} · Consulting: {{ counts.contract }} · scanned {{ scanned }}, {{ candidates }} passed rules{% if note %} · {{ note }}{% endif %}
+
+{% if not counts.strong %}{{ none_message }}
+
+{% endif %}
+{% for section in sections if section.jobs %}== {{ section.label }} ==
+{% for j in section.jobs %}{{ loop.index }}. {{ j.title }} — {{ j.company }}  [{{ j.score }}/100]
+   {{ j.one_line }}
+   {{ j.url }}
+{% endfor %}
+
+{% endfor %}

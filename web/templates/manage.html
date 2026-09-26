@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ _("manage.title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --manage</div>
+  <h1>{{ _("manage.headline") }}</h1>
+  <p class="lead">{{ _("manage.lead") }}</p>
+</div>
+
+{% if saved %}<div class="ok">{{ _("manage.saved") }}</div>{% endif %}
+{% if errors %}<div class="errors" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if not d.confirmed_at %}<div class="errors">{{ _("manage.unconfirmed") }}</div>{% endif %}
+
+{% if d.derived and d.derived.questions and (d.derived.clarity or 3) <= 3 %}
+<div class="promise" id="improve">
+  <p class="big">{{ _("manage.help_title") }}</p>
+  <p>{{ _("manage.help_text") }}</p>
+  <ul>{% for q in d.derived.questions %}<li>{{ q }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+<div class="term"{% if not (d.derived and d.derived.questions and (d.derived.clarity or 3) <= 3) %} id="improve"{% endif %}>
+  <div class="term-bar"><i></i><i></i><i></i><span>~/webzap-jobs — {{ _("manage.term_title") }}</span></div>
+  <form method="post" action="{{ url('/manage/' ~ token) }}" class="term-body">
+    <label for="wish"><span class="p">&gt;</span> {{ _("index.wish_label") }}</label>
+    <textarea id="wish" name="wish" rows="10" maxlength="{{ max_text }}" required>{{ d.text }}</textarea>
+    <p class="hint">{{ _("manage.wish_hint") }} <span id="count" class="mono" aria-live="polite"></span></p>
+    <label><span class="p">&gt;</span> {{ _("index.freq_label") }}</label>
+    <div class="freq">
+      {% for f in ("weekly", "daily", "paused") %}
+      <label><input type="radio" name="frequency" value="{{ f }}" {% if d.frequency == f %}checked{% endif %}> {{ _("freq." ~ f) }}</label>
+      {% endfor %}
+    </div>
+    <label><span class="p">&gt;</span> {{ _("manage.lang_label") }}</label>
+    <div class="freq">
+      {% for l in langs %}
+      <label lang="{{ l }}"><input type="radio" name="email_lang" value="{{ l }}" {% if d.lang == l %}checked{% endif %}> {{ l | upper }}</label>
+      {% endfor %}
+    </div>
+    <button type="submit">{{ _("manage.save") }}</button>
+  </form>
+</div>
+
+<section>
+  <h2>{{ _("manage.stored_title") }}</h2>
+  <div class="term"><div class="term-body">
+    {% set f = "manage.fields." %}
+    <dl class="kv">
+      <dt>{{ _(f ~ "email") }}</dt><dd>{{ d.email }}</dd>
+      <dt>{{ _(f ~ "frequency") }}</dt><dd>{{ _("freq." ~ d.frequency) }}</dd>
+      <dt>{{ _(f ~ "language") }}</dt><dd>{{ d.lang | upper }}</dd>
+      <dt>{{ _(f ~ "signed_up") }}</dt><dd>{{ d.created_at | ts }}</dd>
+      <dt>{{ _(f ~ "confirmed") }}</dt><dd>{{ d.confirmed_at | ts }}</dd>
+      <dt>{{ _(f ~ "edited") }}</dt><dd>{{ d.updated_at | ts }}</dd>
+    </dl>
+  </div></div>
+</section>
+
+<section>
+  <h2>{{ _("manage.understood_title") }}</h2>
+  <div class="term"><div class="term-body">
+    {% if d.derived_status in ("pending", "running") %}
+      <p class="status"><span class="spin" aria-hidden="true"></span> {{ _("manage.updating" if d.derived else "manage.queued") }} – {{ _("manage.queue_note") }}</p>
+    {% elif d.derived_status == "failed" %}
+      <p class="status">{{ _("manage.failed") }}</p>
+    {% elif not d.confirmed_at %}
+      <p class="status">{{ _("manage.after_confirm") }}</p>
+    {% endif %}
+    {% if d.derived %}
+    {% set x = d.derived %}
+    <p class="summary">{{ x.summary }}</p>
+    {% if x.assumptions %}
+    <p class="small tight">{{ _("manage.guesses") }}</p>
+    <ul class="guesses">{% for a in x.assumptions %}<li>{{ a }}</li>{% endfor %}</ul>
+    {% endif %}
+    <dl class="kv">
+      {% macro row(label, v) %}{% if v %}<dt>{{ label }}</dt><dd>{% if v is string %}{{ v }}{% else %}{{ v | join(", ") }}{% endif %}</dd>{% endif %}{% endmacro %}
+      {{ row(_(f ~ "roles"), x.target_roles) }}
+      {{ row(_(f ~ "seniority"), x.seniority) }}
+      {{ row(_(f ~ "fields"), x.fields) }}
+      {{ row(_(f ~ "skills"), x.skills) }}
+      {{ row(_(f ~ "locations"), x.locations | map(attribute="place") | list) }}
+      {{ row(_(f ~ "work_mode"), x.work_modes) }}
+      {{ row(_(f ~ "remote_from"), x.remote_regions) }}
+      {% if x.relocation is not none %}<dt>{{ _(f ~ "relocation") }}</dt><dd>{{ _("manage.yes" if x.relocation else "manage.no") }}</dd>{% endif %}
+      {{ row(_(f ~ "travel"), x.travel) }}
+      {{ row(_(f ~ "employment"), x.employment_types) }}
+      {% if x.salary.minimum %}<dt>{{ _(f ~ "salary") }}</dt><dd>{{ "{:,.0f}".format(x.salary.minimum) }} {{ x.salary.currency }}{% if x.salary.period %} / {{ x.salary.period }}{% endif %}</dd>{% endif %}
+      {{ row(_(f ~ "languages"), x.languages) }}
+      {{ row(_(f ~ "industries_plus"), x.industries_preferred) }}
+      {{ row(_(f ~ "industries_minus"), x.industries_excluded) }}
+      {{ row(_(f ~ "company"), x.company_preferences) }}
+      {{ row(_(f ~ "must_have"), x.must_have) }}
+      {{ row(_(f ~ "deal_breakers"), x.deal_breakers) }}
+      {{ row(_(f ~ "queries"), x.search_queries) }}
+    </dl>
+    {% if not x.target_roles and not x.fields %}
+    <div class="warn" role="note"><b>!</b><span>{{ _("manage.too_vague_questions" if x.questions else "manage.too_vague") }}</span></div>
+    {% endif %}
+    <p class="small mono">{{ _("manage.derived", when=d.derived_at | ts, model=d.derived_by.split(":")[0]) }}{% if d.derived_feedback %}{{ _("manage.derived_feedback", n=d.derived_feedback) }}{% endif %}{{ _("manage.derived_edit") }}</p>
+    {% endif %}
+  </div></div>
+</section>
+
+{% if d.jobs_sent and d.jobs_sent.sent %}
+<section>
+  <h2>{{ _("manage.sent_title") }}</h2>
+  <div class="term"><div class="term-body">
+    <p class="small mono">{{ _("manage.sent_summary", sent=d.jobs_sent.sent, up=d.jobs_sent.up, down=d.jobs_sent.down) }}</p>
+    <dl class="kv">
+      {% for j in d.jobs_sent.jobs[:15] %}<dt>{{ j.sent_at | ts }}</dt><dd>{{ j.title }}{% if j.company %} – {{ j.company }}{% endif %}{% if j.feedback %} {{ "👍" if j.feedback == "up" else "👎" }}{% endif %}{% if j.reason %} <span class="small">({{ j.reason }})</span>{% endif %}</dd>{% endfor %}
+    </dl>
+  </div></div>
+</section>
+{% endif %}
+
+<section>
+  <h2>{{ _("manage.delete_title") }}</h2>
+  <p class="small">{{ _("manage.delete_text") }}</p>
+  <form method="post" action="{{ url('/manage/' ~ token ~ '/delete') }}" class="inline"><button type="submit" class="danger">{{ _("manage.delete_button") }}</button></form>
+</section>
+<script src="/static/app.js" defer></script>
+{% endblock %}

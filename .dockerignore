@@ -1,0 +1,8 @@
+# Never send secrets or personal data into the image
+.env
+private/
+data/
+plan.md
+.git/
+**/__pycache__
+**/*.pyc

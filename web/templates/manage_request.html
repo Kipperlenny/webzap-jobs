@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ _("manage_request.title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --resend-manage-link</div>
+  <h1>{{ _("manage_request.title") }}</h1>
+  <p class="lead">{{ _("manage_request.lead") }}</p>
+</div>
+<div class="term">
+  <div class="term-bar"><i></i><i></i><i></i><span>~/webzap-jobs — {{ _("manage_request.term_title") }}</span></div>
+  <form method="post" action="{{ url('/manage') }}" class="term-body">
+    <label for="email"><span class="p">&gt;</span> {{ _("index.email_label") }}</label>
+    <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+    <div class="hp" aria-hidden="true"><label for="website">{{ _("index.honeypot") }}</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+    <p></p>
+    <button type="submit">{{ _("manage_request.submit") }}</button>
+  </form>
+</div>
+{% endblock %}

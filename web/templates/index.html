@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block head %}{% include "_alternates.html" %}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --describe-your-dream-job</div>
+  <h1>{{ _("index.headline") }}<span class="cursor handoff" aria-hidden="true"></span></h1>
+  <p class="lead">{{ _("index.lead") }}</p>
+  <a class="btn cta" href="#start">{{ _("index.cta") }}</a>
+  <p class="mono small">↳ {{ _("index.trust", sample=url("/sample")) }}</p>
+</div>
+
+<div class="promise calm">
+  <p class="big">{{ _("index.promise_big") }}</p>
+  <p>{{ _("index.promise") }}</p>
+  <div class="pills">{% for p in _("index.pills") %}<span class="pill"><b>✓</b> {{ p }}</span>{% endfor %}</div>
+</div>
+
+{% if errors %}<div class="errors" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<div class="term active" id="start">
+  <div class="term-bar"><i></i><i></i><i></i><span>~/webzap-jobs — {{ _("index.term_title") }}</span></div>
+  <form method="post" action="{{ url('/signup') }}" class="term-body" novalidate>
+    <label for="wish" class="ask"><span class="p">&gt;</span> {{ _("index.wish_label") }}<span class="cursor waiting" aria-hidden="true"></span></label>
+    <textarea id="wish" name="wish" rows="10" maxlength="{{ max_text }}" required
+      placeholder="{{ _('index.wish_placeholder') }}">{{ wish or "" }}</textarea>
+    <p class="hint">{{ _("index.wish_hint") }} <span id="count" class="mono" aria-live="polite"></span></p>
+
+    <div class="warn" role="note"><b>!</b><span>{{ _("index.warn") }}</span></div>
+
+    <label for="email"><span class="p">&gt;</span> {{ _("index.email_label") }}</label>
+    <input id="email" name="email" type="email" autocomplete="email" required value="{{ email or '' }}" placeholder="you@example.com">
+    <p class="hint">{{ _("index.email_hint") }}</p>
+
+    <label><span class="p">&gt;</span> {{ _("index.freq_label") }}</label>
+    <div class="freq">
+      <label><input type="radio" name="frequency" value="weekly" {% if frequency != "daily" %}checked{% endif %}> {{ _("freq.weekly") }}</label>
+      <label><input type="radio" name="frequency" value="daily" {% if frequency == "daily" %}checked{% endif %}> {{ _("freq.daily") }}</label>
+    </div>
+
+    <div class="hp" aria-hidden="true"><label for="website">{{ _("index.honeypot") }}</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+    {% if campaign %}<input type="hidden" name="campaign" value="{{ campaign }}">{% endif %}
+
+    <label class="check"><input type="checkbox" name="consent" value="1" required>
+      <span>{{ _("index.consent", privacy=url("/privacy")) }}</span></label>
+
+    <button type="submit">{{ _("index.submit") }}</button>
+  </form>
+</div>
+
+<section>
+  <h2>{{ _("index.how.title") }}</h2>
+  <ol class="steps">
+    {% for step in ("describe", "confirm", "receive", "control") %}
+    <li><b>{{ _("index.how." ~ step) }}</b>{{ _("index.how." ~ step ~ "_text", sample=url("/sample")) }}</li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section id="code">
+  <h2>{{ _("index.code.title") }}</h2>
+  <div class="oss">
+    <div class="oss-head">
+      <p class="big">{{ _("index.code.big") }}</p>
+      <p class="small">{{ _("index.code.small") }}</p>
+      <ul class="facts">{% for f in _("index.code.facts") %}<li>{{ f }}</li>{% endfor %}</ul>
+    </div>
+    <pre class="code"><code>{{ snippet }}</code></pre>
+    <div class="code-cap"><span>{{ _("index.code.caption") }}</span><a href="{{ repo_url }}/blob/{{ commit if commit != 'dev' else 'main' }}/web/store.py#L{{ snippet_line }}" rel="noopener">web/store.py:{{ snippet_line }}</a></div>
+    <div class="oss-cta">
+      <a class="btn" href="{{ repo_url }}" rel="noopener">{{ _("index.code.view") }}</a>
+      <a class="btn ghost" href="{{ repo_url }}/commit/{{ commit }}" rel="noopener">{{ _("index.code.inspect", commit=commit) }}</a>
+    </div>
+  </div>
+</section>
+<script src="/static/app.js" defer></script>
+{% endblock %}

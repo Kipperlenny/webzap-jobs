@@ -1,0 +1,9 @@
+# secrets and personal data – never commit
+.env
+profile.md
+plan.md
+data/
+__pycache__/
+*.pyc
+search.toml
+private/

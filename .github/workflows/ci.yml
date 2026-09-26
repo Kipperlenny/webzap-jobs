@@ -1,0 +1,16 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install -r web/requirements.txt pytest==8.4.2 ruff==0.13.2 httpx==0.28.1
+      - run: ruff check .
+      - run: pytest -q
+      - run: pip install pip-audit && pip-audit -r web/requirements.txt

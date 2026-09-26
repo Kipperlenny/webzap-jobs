@@ -1,0 +1,47 @@
+{# Precision digest. Inline styles on purpose: most email clients ignore <style> blocks. #}
+{% macro bullets(title, xs, color="#1a1a1a") %}{% if xs %}
+<div style="margin-top:6px;font-size:14px"><b style="color:{{ color }}">{{ title }}</b>
+<ul style="margin:2px 0 0;padding-left:20px">{% for x in xs %}<li>{{ x }}</li>{% endfor %}</ul></div>
+{% endif %}{% endmacro %}
+<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:760px;margin:auto;color:#1a1a1a;line-height:1.5">
+<h2 style="margin-bottom:2px">Daily job scan – {{ today }}</h2>
+<p style="color:#666;margin-top:0">{{ profile_name }}</p>
+<table style="border-collapse:collapse;font-size:14px;margin:8px 0 4px">
+  <tr><td style="padding:2px 12px 2px 0">Verified strong matches</td><td><b>{{ counts.strong }}</b></td></tr>
+  <tr><td style="padding:2px 12px 2px 0">Possible – verify before applying</td><td><b>{{ counts.possible }}</b></td></tr>
+  <tr><td style="padding:2px 12px 2px 0">Consulting / interim</td><td><b>{{ counts.contract }}</b></td></tr>
+</table>
+<p style="color:#888;font-size:12px;margin-top:0">{{ scanned }} postings scanned from {{ sources_ok }} sources
+  {%- if sources_failed %}, failed: {{ sources_failed | join(", ") }}{% endif %} · {{ candidates }} passed the rules
+  {%- if note %} · ⚠ {{ note }}{% endif %}</p>
+{% if not counts.strong %}
+<p style="background:#f7f7f5;border-left:4px solid #999;padding:10px 14px"><b>{{ none_message }}</b></p>
+{% endif %}
+{% for section in sections if section.jobs %}
+<h3 style="border-bottom:2px solid #0e7490;padding-bottom:4px;margin-top:26px">{{ section.label }}</h3>
+{% for j in section.jobs %}
+<div style="border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;margin:12px 0">
+  <div style="font-size:16px;font-weight:600">{{ loop.index }}.
+    <a href="{{ j.url }}" style="color:#0e5a8a;text-decoration:none">{{ j.title }}</a> — {{ j.company }}</div>
+  <div style="color:#555;font-size:14px;margin:4px 0 6px">{{ j.one_line }}</div>
+  <table style="font-size:13px;border-collapse:collapse">
+    {% for k, v in j.facts %}<tr><td style="color:#777;padding:1px 12px 1px 0;vertical-align:top">{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}
+  </table>
+  {{ bullets("Why it fits", j.why_fits) }}
+  {{ bullets("Concerns", j.concerns, "#9a6700") }}
+  {{ bullets("Flags", j.flags, "#b91c1c") }}
+  {{ bullets("Verify before applying", j.verify) }}
+  <div style="color:#888;font-size:12px;margin-top:6px">{{ j.source }} · checked {{ checked }} UTC</div>
+</div>
+{% endfor %}
+{% endfor %}
+{% if rejected %}
+<h3 style="margin-top:26px;color:#555">Rejected – not shown again</h3>
+<table style="border-collapse:collapse;font-size:13px;width:100%">
+  <tr style="text-align:left;color:#666"><th>Company</th><th>Role</th><th>Reason</th></tr>
+  {% for r in rejected %}<tr><td>{{ r.company }}</td><td><a href="{{ r.url }}">{{ r.title }}</a></td><td>{{ r.reason }}</td></tr>{% endfor %}
+</table>
+{% endif %}
+<p style="color:#999;font-size:12px;margin-top:28px">Assessed by a local language model against your precision profile.
+  Scores and salary estimates are indications, not facts – verify before applying.</p>
+</div>

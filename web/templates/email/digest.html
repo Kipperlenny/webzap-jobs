@@ -1,0 +1,34 @@
+{% extends "_layout.html" %}
+{% set d = "email.digest." %}
+{% block body %}
+{% if intro %}<p style="font-size:16px;margin:0 0 18px">{{ intro }}</p>{% endif %}
+{% if help %}{% include "_help.html" %}{% endif %}
+{% if items %}
+<p style="margin:0 0 14px">{{ _(d ~ "lead_" ~ frequency) }}</p>
+{% else %}
+<p>{{ _(d ~ "none") }}</p>
+{% endif %}
+{% for it in items %}
+<div style="border:1px solid #e5e7eb;border-left:3px solid #22d3ee;border-radius:6px;padding:10px 14px;margin:0 0 12px">
+  <div>
+    {% if it.sponsored %}<span style="background:#fef3c7;color:#92400e;font-size:12px;padding:1px 6px;border-radius:4px">{{ _(d ~ "sponsored") }}</span>
+    {% elif it.partner %}<span style="background:#e0f2fe;color:#075985;font-size:12px;padding:1px 6px;border-radius:4px">{{ _(d ~ "partner") }} · {{ it.partner }}</span>
+    {% endif %}
+    <a href="{{ it.url }}" style="font-weight:600;color:#0e7490;text-decoration:none;font-size:16px">{{ it.title }}</a>
+  </div>
+  <div style="color:#4b5563;font-size:14px">{{ it.company }}{% if it.location %} · {{ it.location }}{% endif %}</div>
+  <div style="color:#6b7280;font-size:13px;margin-top:4px">{{ _(d ~ "why") }}: {{ it.why }} · {{ it.source }}</div>
+  <div style="font-size:13px;margin-top:6px">{{ _(d ~ "good_match") }}
+    <a href="{{ it.feedback_url }}?v=up" style="text-decoration:none">👍 {{ _(d ~ "yes") }}</a> &nbsp;
+    <a href="{{ it.feedback_url }}?v=down" style="text-decoration:none">👎 {{ _(d ~ "no") }}</a></div>
+</div>
+{% endfor %}
+{% if disclosure %}
+<p style="color:#6b7280;font-size:12px">{{ _(d ~ "disclosure") }}</p>
+{% endif %}
+{% endblock %}
+{% block footer %}
+{{ _(d ~ "footer_" ~ frequency, site=site) }}
+<a href="{{ manage_url }}">{{ _(d ~ "edit") }}</a> · <a href="{{ unsubscribe_url }}">{{ _(d ~ "unsubscribe") }}</a><br>
+{{ _(d ~ "open_source") }} <a href="{{ repo_url }}">github</a>
+{% endblock %}

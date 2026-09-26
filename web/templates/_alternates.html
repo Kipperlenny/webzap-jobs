@@ -1,0 +1,4 @@
+{# Search engines: the same page in every language, and which URL is the canonical one (ad parameters like ?c= stripped). #}
+{% for l in langs %}<link rel="alternate" hreflang="{{ l }}" href="{{ base_url }}/{{ l }}{{ path }}">
+{% endfor %}<link rel="alternate" hreflang="x-default" href="{{ base_url }}{{ path }}">
+<link rel="canonical" href="{{ base_url }}/{{ lang }}{{ path }}">

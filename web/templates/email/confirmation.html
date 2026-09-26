@@ -1,0 +1,10 @@
+{% extends "_layout.html" %}
+{% block body %}
+<p>{{ _("email.hi") }}</p>
+<p>{{ _("email.confirmation.someone", site=site) }}</p>
+<p><a href="{{ confirm_url }}" style="{{ btn }}">{{ _("email.confirmation.button") }}</a></p>
+<p style="color:#6b7280">{{ _("email.confirmation.expires", hours=ttl_hours) }}</p>
+<p><strong>{{ _("email.confirmation.keep") }}</strong></p>
+<p>→ <a href="{{ manage_url }}">{{ _("email.manage") }}</a>: {{ _("email.manage_desc") }}<br>
+   → <a href="{{ delete_url }}">{{ _("email.delete") }}</a></p>
+{% endblock %}

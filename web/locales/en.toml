@@ -1,0 +1,280 @@
+# English strings – the reference for all other locales (same keys, same {placeholders}).
+# Values may contain HTML where the template shows them as HTML; placeholders are escaped automatically.
+
+[meta]
+title = "WebZap Jobs – describe the job you want"
+description = "Describe the job you want in your own words. Get only matching open positions by email. Free, open source, no accounts, no tracking."
+suffix = "WebZap Jobs"
+
+[nav]
+source = "source code"
+imprint = "imprint"
+privacy = "privacy"
+lost_link = "lost your link?"
+github = "github"
+license = "MIT licensed · running"
+back = "← Back to the start page"
+language = "Language"
+
+[index]
+headline = 'Tell us the job you <span class="c">actually</span> want.'
+lead = "Every day, WebZap Jobs scans thousands of open positions and emails you only the ones that match what you wrote. No profile to fill in, no account, no CV upload. Just your own words."
+cta = "describe your job ↓"
+trust = 'free &amp; open source – <a href="#code">read what we do with your data</a> · <a href="{sample}">see a sample email</a>'
+promise_big = "This is <em>100% free</em>. Your text is used for exactly one thing: <em>emailing you tailored job offers</em>."
+promise = "We never sell or share your data – it's a one-way street. To keep this free, companies can pay us to include their job in our emails, and some job links go to partner job search engines that pay us per click. Both are always clearly labelled (“Sponsored”, “Partner link”), and neither ever gets your email address or what you wrote. Every email has a link to change the frequency, pause, or delete everything – one click, any time."
+pills = ["free forever", "no account", "no cookies", "encrypted at rest", "open source"]
+term_title = "new search"
+wish_label = "I want to…"
+wish_placeholder = "…work as a senior marketing manager for a sustainable consumer brand. Last position: marketing lead at a food start-up, team of 4. I love brand strategy and content, less so paid ads. Based in Hamburg, open to remote, happy to travel sometimes. Salary around 70k. Not interested in agency jobs…"
+wish_hint = "Mention your field, your interests, your last position, where you're based, remote or not, salary expectations, what you <em>don't</em> want – everything in your head. Any language is fine. Brainstorm it!"
+warn = "<strong>Don't enter your name or other personal details</strong> (phone, address, employer names you want to keep private, health, etc.). We only need what describes your job search intent."
+email_label = "email"
+email_hint = "Only used to send you job matches and the links to manage your entry."
+freq_label = "how often?"
+honeypot = "Leave this empty"
+consent = 'I agree that my email address and text are stored to send me job matches (which may include clearly labelled sponsored jobs and partner links), and that opens and clicks of these emails are counted to remove inactive subscribers – as described in the <a href="{privacy}">privacy policy</a>. I can change or delete everything at any time.'
+submit = "send me the confirmation link →"
+
+[index.how]
+title = "how it works"
+describe = "describe"
+describe_text = "Write freely what you're looking for. Messy is fine."
+confirm = "confirm"
+confirm_text = "Click the link in the email we send you. Unconfirmed entries vanish after 48 h."
+receive = "receive"
+receive_text = 'Get matching open positions, daily or weekly. Only real, current postings. <a href="{sample}">See a sample →</a>'
+control = "control"
+control_text = "No account, no password. Every email contains your personal links to edit, pause, export or delete."
+
+[index.code]
+title = "don't trust us – read the code"
+big = "WebZap Jobs is <em>open source</em>. Everything this site does with your data is public on GitHub."
+small = "Privacy promises are cheap. Code is verifiable. Read it, audit it, run your own instance, or open an issue if you find something you don't like."
+facts = [
+  "MIT license",
+  "email + text encrypted (Fernet/AES)",
+  "links stored only as SHA-256 hashes",
+  "zero cookies, zero trackers",
+  "no third-party fonts or scripts",
+  "deployed commit shown in the footer",
+]
+caption = "↑ the actual function that stores your sign-up, read from the code running right now"
+view = "view source on github →"
+inspect = "inspect deployed commit {commit}"
+
+[errors]
+email = "Please enter a valid email address."
+too_short = "Tell us a bit more – at least a sentence or two."
+too_long = "Please keep it under {max} characters."
+consent = "Please accept the privacy policy."
+send_failed = "We couldn't send the confirmation email. Please try again later."
+frequency = "Please choose how often we should email you."
+length = "Your text needs between {min} and {max} characters."
+
+[freq]
+weekly = "weekly digest"
+daily = "daily"
+paused = "paused – no emails"
+
+[check_email]
+title = "Check your inbox"
+headline = "Check your inbox."
+lead = "If the address is valid, we've sent you a confirmation link. Click it to activate your entry – otherwise it's deleted automatically after 48 hours."
+keep = "Keep that email: its links are your keys to edit, pause, export or delete your entry. Nothing there? Check your spam folder."
+lead_lost = "If a confirmed entry exists for this address, we've just emailed you a fresh manage link. Older manage links stop working."
+back = "← back"
+
+[action]
+invalid = "This link is no longer valid."
+invalid_lead = "It may have been used already, or the entry was deleted."
+invalid_confirm = "Unconfirmed entries expire after 48 hours."
+invalid_manage = "A newer manage link may have been requested."
+request_new = "Request a fresh manage link →"
+confirm = "One last click."
+confirm_lead = "Confirm that you want WebZap Jobs to store your email address and your description."
+confirm_button = "Yes, confirm my sign-up"
+unsubscribe = "Unsubscribe?"
+unsubscribe_lead = "You won't get any more job emails from us. Your entry stays until you delete it – you can switch emails back on or delete everything on your manage page."
+unsubscribe_button = "Yes, stop all emails"
+delete = "Delete your data?"
+delete_lead = "This permanently deletes your email address and your description from WebZap Jobs. This can't be undone."
+delete_button = "Delete my data"
+
+[done]
+invalid_lead = "It may have been used already."
+confirm = "You're in. ✓"
+confirm_lead = "Your sign-up is confirmed. We've just sent you a short welcome email with your personal links."
+confirm_next = "Now it's our turn: we only email you when something really fits – no mass mailings. That can take a few days."
+feedback = "Thanks!"
+feedback_lead = "Your feedback helps us send you better matches."
+unsubscribe = "You're unsubscribed."
+unsubscribe_lead = "No more job emails. Your entry is kept (paused) until you delete it."
+unsubscribe_manage = "Manage or delete your data →"
+delete = "Your data has been deleted."
+delete_lead = "Your email address and your description are gone from our database. Thanks for trying WebZap Jobs."
+
+[feedback]
+title = "Feedback"
+up = "Good match? 👍"
+down = "Not a match? 👎"
+what_wrong = "what was wrong? (optional)"
+company_hint = "“not this company” means we won't send you jobs from this company again."
+up_hint = "We'll use this to find more jobs like it."
+submit = "send feedback"
+
+[feedback.reasons]
+field = "not my field"
+location = "wrong location"
+junior = "too junior"
+senior = "too senior"
+salary = "salary too low"
+company = "not this company"
+known = "already applied / known"
+other = "other"
+
+[manage_request]
+title = "Lost your link?"
+lead = "There are no accounts – your emails are your keys. Enter your address and, if it has a confirmed entry, we'll send you a fresh link to manage it."
+term_title = "recover"
+submit = "email me a manage link →"
+
+[manage]
+title = "Manage your entry"
+headline = "Your entry."
+lead = "This page is only reachable through the secret link in your email. Don't share it."
+saved = "✓ saved."
+unconfirmed = "This entry isn't confirmed yet. Click the confirmation link in your email first – unconfirmed entries are deleted after 48 hours."
+help_title = "Help us understand you better."
+help_text = "We made a first guess from your text, but a few details would make your matches much better. Just add the answers to your text below – in your own words:"
+term_title = "edit"
+wish_hint = "Re-tailor it any time – the next matches will use the new text. Please no names or personal details."
+lang_label = "email language"
+save = "save changes"
+stored_title = "everything we store about you"
+understood_title = "what we understood from your text"
+queued = "queued"
+updating = "updating after your last edit"
+queue_note = "our language model runs on our own hardware and processes the queue whenever it's online. This can take a few hours. Reload this page later."
+failed = "We couldn't turn your text into search criteria. Try describing the role, field and location a bit more concretely and save again."
+after_confirm = "Starts after you confirm your sign-up."
+guesses = "Our guesses – if any is wrong, just correct it in your text:"
+too_vague = "<strong>Too vague to search for jobs yet.</strong> Please edit your text above and add the kind of role, field and location you're looking for."
+too_vague_questions = "<strong>Too vague to search for jobs yet.</strong> Please edit your text above and add the answers to the questions at the top."
+derived = "derived {when} by {model} (local model)"
+derived_feedback = ", including your 👍/👎 on {n} job(s)"
+derived_edit = " – wrong? Just edit your text above; we'll re-derive it."
+sent_title = "jobs we sent you"
+sent_summary = "{sent} sent · {up} 👍 · {down} 👎"
+delete_title = "delete"
+delete_text = "Permanently deletes your email address, your text and everything above. No backups are restored, no “are you sure” emails."
+delete_button = "delete all my data"
+yes = "yes"
+no = "no"
+
+[manage.fields]
+email = "email"
+frequency = "frequency"
+language = "language"
+signed_up = "signed up"
+confirmed = "confirmed"
+edited = "last edited"
+roles = "roles"
+seniority = "seniority"
+fields = "fields"
+skills = "skills"
+locations = "locations"
+work_mode = "work mode"
+remote_from = "remote from"
+relocation = "relocation"
+travel = "travel"
+employment = "employment"
+salary = "salary from"
+languages = "languages"
+industries_plus = "industries +"
+industries_minus = "industries −"
+company = "company"
+must_have = "must have"
+deal_breakers = "deal breakers"
+queries = "search queries"
+
+[sample]
+title = "Sample email"
+headline = "What you'll get."
+lead = "A typical email: a few jobs that really fit, why we picked them, and one click to tell us if we got it right. Everything in it is an example."
+from = "From"
+subject = "Subject"
+intro = "Brand strategy, Hamburg, and please no agencies – noted. Here's what we found for you this week."
+cta = "describe your job →"
+
+[legal]
+missing = "This installation hasn't published this page yet."
+binding = 'This is a translation for your convenience. Only the <a href="{url}">original version</a> is legally binding.'
+privacy_title = "Privacy policy"
+imprint_title = "Imprint"
+
+[email]
+hi = "Hi,"
+footer = "&gt; webzap/jobs · free &amp; open source · no accounts"
+manage_desc = "change email frequency, edit your text, see all data we store"
+manage = "Manage"
+manage_button = "Manage my entry"
+delete = "Delete all my data"
+
+[email.confirmation]
+subject = "Confirm your WebZap Jobs sign-up"
+someone = "someone (hopefully you) entered this email address on {site}."
+button = "Confirm my sign-up"
+expires = "If you do nothing, your entry is deleted automatically after {hours} hours."
+keep = "Keep this email. There is no account – these links are your keys:"
+
+[email.welcome]
+subject = "You're all set – WebZap Jobs"
+headline = "You're all set. ✓"
+next = "Your sign-up is confirmed. Here's what happens now:"
+step_read = "Our language model reads your text and turns it into search criteria. This can take a few hours."
+step_scan = "Every day we check thousands of new job postings against them."
+step_wait = "You only hear from us when something really fits – no mass mailings, no newsletter. Depending on how specific your search is, that can take a few days or a few weeks."
+step_first = "Your first email also tells you what we understood. If we're unsure, we'll ask."
+keep = "Keep this email – there's no account. This link is your key to edit your text, change how often we email you, see what we understood, export or delete everything:"
+tip = "Tip: the more concrete your text (role, field, place, salary), the better your matches. You can refine it any time."
+
+[email.manage_link]
+subject = "Your WebZap Jobs manage link"
+text = "here is a fresh link to manage your WebZap Jobs entry – email frequency, your text, your data, deletion:"
+note = "Older manage links no longer work. If you didn't request this, you can ignore this email."
+
+[email.digest]
+subject_one = "1 new job match for you"
+subject_many = "{n} new job matches for you"
+subject_help = "Help us find your next job"
+lead_daily = "Your new job matches today:"
+lead_weekly = "Your new job matches this week:"
+none = "We couldn't find matching open positions yet – the more you tell us, the better we can search."
+sponsored = "Sponsored"
+partner = "Partner link"
+why = "Why"
+why_role = "matches “{role}”"
+why_remote = "remote ({where})"
+worldwide = "worldwide"
+why_mentions = "mentions {words}"
+src_sponsored = "sponsored listing"
+src_partner = "via {name}"
+src_direct = "employer's career page"
+src_source = "source: {name}"
+good_match = "Good match?"
+yes = "yes"
+no = "no"
+feedback = "Feedback"
+disclosure = "“Sponsored” jobs are paid placements. “Partner links” go to job search partners who may pay us a small fee when you click. Neither ever receives your email address or your data from us."
+footer_daily = "You get this email daily because you signed up on {site}."
+footer_weekly = "You get this email weekly because you signed up on {site}."
+edit = "Edit your text, frequency or data"
+unsubscribe = "Unsubscribe"
+open_source = "WebZap Jobs is free and open source."
+help_title = "Help us understand you better"
+help_guess = "We made a first guess from your text."
+help_guess_example = "We made a first guess from your text, e.g.: {guess}."
+help_text = "These jobs are based on that guess. To make your next matches much better, we'd love to know:"
+help_button = "Tell us more →"
+default_question = "What kind of role and field are you looking for, and where?"

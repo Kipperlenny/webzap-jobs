@@ -1,0 +1,18 @@
+# WebZap Jobs – reverse proxy to the docker container on 127.0.0.1:8010.
+# certbot --nginx adds the TLS server block and the HTTP->HTTPS redirect.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com www.example.com;
+
+    client_max_body_size 64k;
+    access_log /var/log/nginx/access.log redacted;   # needs deploy/nginx-redact-tokens.conf in conf.d
+
+    location / {
+        proxy_pass http://127.0.0.1:8010;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

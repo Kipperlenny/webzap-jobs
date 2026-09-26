@@ -1,0 +1,7 @@
+{% extends "_layout.html" %}
+{% block body %}
+<p>{{ _("email.hi") }}</p>
+<p>{{ _("email.manage_link.text") }}</p>
+<p><a href="{{ manage_url }}" style="{{ btn }}">{{ _("email.manage_button") }}</a></p>
+<p style="color:#6b7280">{{ _("email.manage_link.note") }}</p>
+{% endblock %}

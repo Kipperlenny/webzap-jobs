@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+{% if not ok %}
+  <h1>{{ _("action.invalid") }}</h1>
+  <p class="lead">{{ _("done.invalid_lead") }}</p>
+{% else %}
+  <h1>{{ _("done." ~ action) }}{% if action == "feedback" %} {{ "👍" if vote == "up" else "👎" }}{% endif %}</h1>
+  <p class="lead">{{ _("done." ~ action ~ "_lead") }}</p>
+  {% if action == "confirm" %}<p class="small">{{ _("done.confirm_next") }}</p>{% endif %}
+  {% if action == "unsubscribe" %}<p><a href="{{ url('/manage/' ~ token) }}">{{ _("done.unsubscribe_manage") }}</a></p>{% endif %}
+{% endif %}
+<p><a href="{{ url('/') }}">{{ _("nav.back") }}</a></p>
+{% endblock %}

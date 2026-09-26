@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+{% if not ok %}
+  <h1>{{ _("action.invalid") }}</h1>
+  <p class="lead">{{ _("action.invalid_lead") }}{% if action == "confirm" %} {{ _("action.invalid_confirm") }}{% endif %}{% if action == "manage" %} {{ _("action.invalid_manage") }}{% endif %}</p>
+  {% if action == "manage" %}<p><a href="{{ url('/manage') }}">{{ _("action.request_new") }}</a></p>{% endif %}
+  <p><a href="{{ url('/') }}">{{ _("nav.back") }}</a></p>
+{% else %}
+  {# confirm, unsubscribe, delete: GET shows the question, the POST does it (mail scanners prefetch links) #}
+  <h1>{{ _("action." ~ action) }}</h1>
+  <p class="lead">{{ _("action." ~ action ~ "_lead") }}</p>
+  <form method="post" action="{{ url('/' ~ action ~ '/' ~ token) }}" class="inline"><button type="submit"{% if action == "delete" %} class="danger"{% endif %}>{{ _("action." ~ action ~ "_button") }}</button></form>
+{% endif %}
+{% endblock %}

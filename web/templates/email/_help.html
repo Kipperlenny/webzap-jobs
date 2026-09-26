@@ -1,0 +1,8 @@
+{# "Help us understand you better" box for the first digest after a vague brainstorm text. #}
+<div style="border:2px solid #22d3ee;border-radius:10px;padding:16px 18px;margin:0 0 24px;background:#ecfeff">
+  <p style="margin:0 0 8px;font-weight:700;color:#0e7490">{{ _("email.digest.help_title") }}</p>
+  <p style="margin:0 0 8px">{% if help.guess %}{{ _("email.digest.help_guess_example", guess=help.guess) }}{% else %}{{ _("email.digest.help_guess") }}{% endif %}
+    {{ _("email.digest.help_text") }}</p>
+  <ul style="margin:0 0 12px;padding-left:20px">{% for q in help.questions %}<li>{{ q }}</li>{% endfor %}</ul>
+  <p style="margin:0"><a href="{{ help.url }}" style="{{ btn }}">{{ _("email.digest.help_button") }}</a></p>
+</div>

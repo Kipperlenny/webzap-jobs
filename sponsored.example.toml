@@ -1,0 +1,15 @@
+# Sponsored jobs for the subscriber digest. Copy to private/sponsored/<campaign>.toml (gitignored; mounted read-only
+# into the containers). One-way: WE match the job to subscribers on our server – the sponsor never receives any
+# subscriber data, only aggregate numbers (store.sponsored_stats(): emails sent, 👍, 👎).
+# Each subscriber gets a sponsored job at most once, max. one per digest, always labelled "Sponsored".
+
+[[job]]
+id = "acme-em-2026-10"                  # unique, used for the aggregate stats
+company = "Acme GmbH"
+title = "Engineering Manager (remote, EU)"
+url = "https://jobs.example.com/acme/123"
+location = "Remote, Europe"
+remote = true
+description = "Lead a team of 8 engineers building our platform. English, German a plus. Remote across the EU."
+starts = "2026-10-01"
+ends = "2026-10-31"

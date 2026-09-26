@@ -1,0 +1,44 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-dev}
+    container_name: webzap-jobs-web
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8010:8000"
+    volumes:
+      - jobradar-data:/data
+      - ./private/sponsored:/sponsored:ro
+      - ./private/legal:/legal:ro  # your imprint and privacy policy (not in the repository)
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+
+  worker:
+    # Processes the task queue (brainstorm text -> search fields) whenever an LLM connector is online.
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-dev}
+    container_name: webzap-jobs-worker
+    command: ["python", "worker.py"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - jobradar-data:/data
+      - ./private/sponsored:/sponsored:ro
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    healthcheck:
+      disable: true
+
+volumes:  # volume name kept from the project's first name so existing data survives
+  jobradar-data:

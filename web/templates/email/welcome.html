@@ -1,0 +1,12 @@
+{% extends "_layout.html" %}
+{% block body %}
+<p style="font-size:18px;font-weight:700;margin:0 0 12px">{{ _("email.welcome.headline") }}</p>
+<p>{{ _("email.welcome.next") }}</p>
+<ol style="padding-left:20px;margin:0 0 16px">
+{% for step in ("read", "scan", "wait", "first") %}  <li style="margin:0 0 6px">{{ _("email.welcome.step_" ~ step) }}</li>
+{% endfor %}
+</ol>
+<p><strong>{{ _("email.welcome.keep") }}</strong></p>
+<p><a href="{{ manage_url }}" style="{{ btn }}">{{ _("email.manage_button") }}</a></p>
+<p style="color:#6b7280">{{ _("email.welcome.tip") }}</p>
+{% endblock %}

@@ -1,0 +1,18 @@
+{{ _("email.hi") }}
+
+{{ _("email.confirmation.someone", site=site) }}
+
+1) {{ _("email.confirmation.button") }}:
+{{ confirm_url }}
+
+2) {{ _("email.confirmation.keep") }}
+
+{{ _("email.manage") }} ({{ _("email.manage_desc") }}):
+{{ manage_url }}
+
+{{ _("email.delete") }}:
+{{ delete_url }}
+
+{{ _("email.confirmation.expires", hours=ttl_hours) }}
+
+WebZap Jobs - {{ repo_url }}

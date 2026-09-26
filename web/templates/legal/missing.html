@@ -1,0 +1,10 @@
+{# Shown when this instance has no legal pages in LEGAL_DIR – the repository deliberately ships none (see README). #}
+{% extends "base.html" %}
+{% block title %}{{ _("legal." ~ page_name ~ "_title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block content %}
+<article class="legal">
+<h1>{{ _("legal." ~ page_name ~ "_title") }}</h1>
+<p class="lead">{{ _("legal.missing") }}</p>
+<p><a href="{{ url('/') }}">{{ _("nav.back") }}</a></p>
+</article>
+{% endblock %}

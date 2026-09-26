@@ -1,0 +1,6 @@
+{{ _("email.hi") }}
+
+{{ _("email.manage_link.text") }}
+{{ manage_url }}
+
+{{ _("email.manage_link.note") }}

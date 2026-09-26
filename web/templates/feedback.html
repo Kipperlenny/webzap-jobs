@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ _("feedback.title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --feedback</div>
+  <h1>{{ _("feedback." ~ vote) }}</h1>
+  <p class="lead"><strong>{{ job.title }}</strong>{% if job.company %} – {{ job.company }}{% endif %}</p>
+</div>
+<div class="term">
+  <div class="term-bar"><i></i><i></i><i></i><span>~/webzap-jobs — feedback</span></div>
+  <form method="post" action="{{ url('/feedback/' ~ token) }}" class="term-body">
+    <input type="hidden" name="vote" value="{{ vote }}">
+    {% if vote == "down" %}
+    <label><span class="p">&gt;</span> {{ _("feedback.what_wrong") }}</label>
+    <div class="freq">
+      {% for key, value in reasons.items() %}<label><input type="checkbox" name="reason" value="{{ value }}"> {{ _("feedback.reasons." ~ key) }}</label>{% endfor %}
+    </div>
+    <p class="hint">{{ _("feedback.company_hint") }}</p>
+    {% else %}
+    <p class="hint">{{ _("feedback.up_hint") }}</p>
+    {% endif %}
+    <button type="submit">{{ _("feedback.submit") }}</button>
+  </form>
+</div>
+{% endblock %}

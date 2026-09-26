@@ -1,0 +1,12 @@
+{# Frame of the instance's legal pages (they live in LEGAL_DIR, outside the repository). Translations say which
+   version is legally binding when LEGAL_BINDING_LANG is set. #}
+{% extends "base.html" %}
+{% block title %}{{ _("legal." ~ page_name ~ "_title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block head %}{% include "_alternates.html" %}{% endblock %}
+{% block content %}
+<article class="legal">
+<h1>{% block heading %}{% endblock %}</h1>
+{% if legal_binding and page_lang != legal_binding %}<p class="small">{{ _("legal.binding", url=url("/" ~ page_name, legal_binding)) }}</p>{% endif %}
+{% block legal %}{% endblock %}
+</article>
+{% endblock %}

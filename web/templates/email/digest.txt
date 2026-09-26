@@ -1,0 +1,21 @@
+{% set d = "email.digest." %}
+{% if intro %}{{ intro }}
+
+{% endif %}{% if help %}{{ _(d ~ "help_title") | upper }}
+{% if help.guess %}{{ _(d ~ "help_guess_example", guess=help.guess) }}{% else %}{{ _(d ~ "help_guess") }}{% endif %} {{ _(d ~ "help_text") }}
+{% for q in help.questions %}- {{ q }}
+{% endfor %}{{ _(d ~ "help_button") }} {{ help.url }}
+
+{% endif %}{% if items %}{{ _(d ~ "lead_" ~ frequency) }}
+{% else %}{{ _(d ~ "none") }}
+{% endif %}
+{% for it in items %}- {% if it.sponsored %}[{{ _(d ~ "sponsored") }}] {% elif it.partner %}[{{ _(d ~ "partner") }} · {{ it.partner }}] {% endif %}{{ it.title }} — {{ it.company }}{% if it.location %} ({{ it.location }}){% endif +%}
+  {{ it.url }}
+  {{ _(d ~ "why") }}: {{ it.why }} · {{ it.source }}
+  {{ _(d ~ "feedback") }}: {{ it.feedback_url }}?v=up  /  {{ it.feedback_url }}?v=down
+
+{% endfor %}
+{% if disclosure %}{{ _(d ~ "disclosure") }}
+{% endif %}
+{{ _(d ~ "edit") }}: {{ manage_url }}
+{{ _(d ~ "unsubscribe") }}: {{ unsubscribe_url }}

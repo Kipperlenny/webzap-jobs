@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ _("check_email.title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ mail --sent</div>
+  <h1>{{ _("check_email.headline") }}<span class="cursor" aria-hidden="true"></span></h1>
+  {% if lost_link %}
+  <p class="lead">{{ _("check_email.lead_lost") }}</p>
+  {% else %}
+  <p class="lead">{{ _("check_email.lead") }}</p>
+  <p class="small">{{ _("check_email.keep") }}</p>
+  {% endif %}
+  <p class="mono"><a href="{{ url('/') }}">{{ _("check_email.back") }}</a></p>
+</div>
+{% endblock %}

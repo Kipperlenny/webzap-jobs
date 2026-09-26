@@ -1,0 +1,98 @@
+# Precision profile – "your personal search".
+#
+# For a very specific search with few but well-matched results. Copy this file to private/profiles/<you>.toml
+# (the private/ folder is gitignored) and describe your search in as much detail as you like.
+# `python3 -m jobagent.run` runs every profile in private/profiles/ and emails each digest to its `email`.
+#
+# How a posting is judged:
+#   1. Rules (cheap): title patterns, location, age, stated salary, hard exclusion patterns in the description.
+#   2. Language model (via the connectors in .env): scores each [[scoring.category]], applies [[scoring.penalty]]
+#      and [rules] checks, extracts salary/office/language facts and writes "why", "concerns", "verify before applying".
+#   3. Code adds the points up and sorts the result into strong / possible / contract, capped by [output].
+
+name = "Example: senior product manager, Lisbon"
+email = "you@example.com"
+
+# Who you are and what you want, in plain words. The more precise, the better the judgement.
+candidate = """
+Senior product manager, 8 years in B2B SaaS, based in Lisbon, Portugal. Portuguese native, fluent English.
+Looking for Senior/Lead PM or Head of Product roles. On-site/hybrid only in Lisbon; otherwise remote from Portugal.
+No relocation. At least EUR 60k base. Not interested in project-management-only or agency roles.
+"""
+
+[search]
+max_age_days = 30                  # older postings are dropped …
+direct_ignores_age = true          # … unless they are live on the employer's own ATS (then they are still open)
+queries = ["senior product manager", "head of product", "lead product manager"]
+
+[titles]
+include = ["\\b(head|director|vp) of product\\b", "\\b(senior |lead |principal )product manager\\b"]
+exclude = ["\\bintern(ship)?\\b", "\\bjunior\\b", "\\bproject manager\\b"]
+
+[location]
+home = ["portugal", "lisbon", "lisboa"]
+remote_ok = ["europe", "emea", "eu", "portugal", "worldwide", "anywhere"]
+
+[rules]
+# Regexes on the job description that exclude a posting before the model sees it.
+hard_exclude = ["(fluent|native) (french|german) (is )?required", "must (reside|be based) in (the )?(us|uk)"]
+# Plain-language rules the model applies; "exclude" = drop, "flag" = keep but show the warning.
+exclude = ["Portuguese is not required, but a mandatory other local language (e.g. fluent German) is an exclusion."]
+flag = ["Employer's ability to employ someone resident in Portugal not confirmed – verify before applying."]
+
+[compensation]
+currency = "EUR"
+floor_base = 60000                 # stated base clearly below this → excluded by the rules
+target_base = [70000, 90000]
+min_day_rate = 500                 # for contract / freelance roles
+estimate_when_missing = true       # model estimates salary with a confidence label: stated / estimated-high-confidence /
+                                   # estimated-low-confidence / unknown
+
+[[scoring.category]]
+name = "location"
+points = 30
+guidance = "Explicitly open to Portugal or remote EU = full points. Unclear remote scope = half."
+
+[[scoring.category]]
+name = "role_and_seniority"
+points = 30
+guidance = "Senior/lead PM or head of product with real product ownership."
+
+[[scoring.category]]
+name = "compensation"
+points = 20
+guidance = "Stated or credibly estimated base vs. the target range."
+
+[[scoring.category]]
+name = "domain"
+points = 20
+guidance = "B2B SaaS, fintech, developer tools."
+
+[[scoring.penalty]]
+name = "weekly_onsite_outside_home"
+points = 30
+condition = "Requires weekly on-site presence outside the home area."
+
+[[scoring.penalty]]
+name = "relocation_required"
+points = 40
+condition = "Relocation is mandatory."
+
+[output]
+strong_min = 75                    # total score for "strong match"
+possible_min = 60                  # total score for "possible – verify before applying"
+max_strong = 3
+max_possible = 2
+max_contract = 2
+max_llm_jobs = 25                  # model calls per run (a local model needs ~1-2 min per job)
+none_message = "No verified strong-match roles found today."
+
+[sources]
+aggregators = ["remoteok", "arbeitnow", "himalayas", "jobicy"]
+jobicy_geo = ["europe", "anywhere"]
+greenhouse = ["gitlab", "stripe"]
+lever = []
+ashby = ["notion"]
+smartrecruiters = []
+personio = []
+recruitee = []

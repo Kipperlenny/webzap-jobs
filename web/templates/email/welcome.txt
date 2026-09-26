@@ -1,0 +1,11 @@
+{{ _("email.welcome.headline") }}
+
+{{ _("email.welcome.next") }}
+
+{% for step in ("read", "scan", "wait", "first") %}{{ loop.index }}. {{ _("email.welcome.step_" ~ step) }}
+{% endfor %}
+
+{{ _("email.welcome.keep") }}
+{{ manage_url }}
+
+{{ _("email.welcome.tip") }}

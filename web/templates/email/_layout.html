@@ -1,0 +1,8 @@
+{# Shared email layout. Inline styles on purpose: most email clients ignore <style> blocks. #}
+{% set btn = "display:inline-block;background:#22d3ee;color:#04141a;padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:600" %}
+<div lang="{{ lang }}" style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;color:#1f2937;font-size:15px;line-height:1.55">
+{% block body %}{% endblock %}
+<p style="color:#6b7280;font-size:12px;margin-top:28px;border-top:1px solid #e5e7eb;padding-top:12px">
+{% block footer %}{{ _("email.footer") }} · <a href="{{ repo_url }}">github</a>{% endblock %}
+</p>
+</div>

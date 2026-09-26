@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ _("sample.title") }} – {{ _("meta.suffix") }}{% endblock %}
+{% block head %}{% include "_alternates.html" %}{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --sample</div>
+  <h1>{{ _("sample.headline") }}</h1>
+  <p class="lead">{{ _("sample.lead") }}</p>
+</div>
+<div class="mail">
+  <dl class="mail-head">
+    <dt>{{ _("sample.from") }}</dt><dd>WebZap Jobs</dd>
+    <dt>{{ _("sample.subject") }}</dt><dd>{{ subject }}</dd>
+  </dl>
+  {# The real email template, rendered by /sample/mail – emails need inline styles, which this page's CSP forbids. #}
+  <iframe src="{{ url('/sample/mail') }}" title="{{ _('sample.title') }}"></iframe>
+</div>
+<p class="sample-cta"><a class="btn cta" href="{{ url('/') }}#start">{{ _("sample.cta") }}</a></p>
+<script src="/static/app.js" defer></script>
+{% endblock %}

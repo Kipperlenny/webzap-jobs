@@ -1,0 +1,31 @@
+[project]
+name = "webzap-jobs"
+version = "0.1.0"
+description = "Describe the job you want in your own words; get only matching open positions by email."
+license = "MIT"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM"]
+ignore = [
+  "S101",   # assert in tests
+  "S311",   # random is not used for security
+  "S608",   # SQL built only from internal column names (never user input)
+  "B008",   # FastAPI Form(...) defaults
+  "SIM905", # "a b c".split() is the more readable way to write word lists
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["jobagent"]
+known-local-folder = ["app", "digest", "extract", "i18n", "mailer", "matching", "settings", "stats", "store", "worker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "web"]

@@ -1,0 +1,27 @@
+# Settings for the subscriber digest (web/digest.py). Public and generic – no personal data here.
+
+[digest]
+# Strict on purpose: only send what is really worth reading. No match = no email.
+min_score = 70              # matching score 0-100 a job needs to be sent
+daily_max = 3               # jobs per daily digest
+weekly_max = 7              # jobs per weekly digest
+max_per_company = 2         # variety: no digest full of one employer
+weekly_day = 0              # 0 = Monday
+max_age_days = 30
+partner_queries_per_subscriber = 3   # searches per subscriber against each active partner feed
+
+[sources]
+# Fetched once per run for everyone. Remotive is excluded: its free API forbids services that collect sign-ups.
+aggregators = ["remoteok", "arbeitnow", "himalayas", "jobicy"]
+jobicy_geo = ["europe", "emea", "anywhere"]
+himalayas_queries = ["manager", "marketing", "sales", "designer", "engineer", "product", "operations", "finance", "support", "data"]
+greenhouse = ["adyen", "algolia", "bitpanda", "cabify", "canonical", "celonis", "cloudflare", "commercetools",
+  "contentful", "datadog", "ebury", "elastic", "getyourguide", "gitlab", "grafanalabs", "hellofresh", "intercom",
+  "jetbrains", "mongodb", "n26", "okta", "remotecom", "stripe", "sumup", "twilio", "typeform", "vercel", "wallapop",
+  "wise", "wolt", "doctolib", "thoughtworks", "valtech"]
+lever = ["contentsquare", "jobandtalent", "lodgify", "spotify", "qonto", "netlight", "reply"]
+ashby = ["alan", "backmarket", "camunda", "cohere", "deepl", "docker", "elevenlabs", "linear", "miro", "mollie",
+  "n8n", "notion", "pennylane", "plaid", "pleo", "posthog", "sanity", "supabase", "synthesia", "zapier"]
+smartrecruiters = ["Endava", "Devoteam", "DeliveryHero"]
+personio = ["codecentric", "paradigmadigital", "chrono24"]
+recruitee = ["holded", "landbot", "bunq", "adesso", "inovex", "netconomy"]
