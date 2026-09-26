@@ -36,6 +36,10 @@ remote_ok = ["europe", "emea", "eu", "portugal", "worldwide", "anywhere"]
 [rules]
 # Regexes on the job description that exclude a posting before the model sees it.
 hard_exclude = ["(fluent|native) (french|german) (is )?required", "must (reside|be based) in (the )?(us|uk)"]
+# Optional: the posting must match at least one of these regexes OR be written in one of these languages
+# (german, english, spanish, french, portuguese) – e.g. "a language I speak is asked for, or the ad is in that language".
+# require_any = ["\\b(fluent|native|good) (command of )?portuguese\\b"]
+# require_written_in = ["portuguese"]
 # Plain-language rules the model applies; "exclude" = drop, "flag" = keep but show the warning.
 exclude = ["Portuguese is not required, but a mandatory other local language (e.g. fluent German) is an exclusion."]
 flag = ["Employer's ability to employ someone resident in Portugal not confirmed – verify before applying."]

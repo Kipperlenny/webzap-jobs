@@ -6,6 +6,8 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .filters import STOPWORDS
+
 
 def _any(patterns):
     return re.compile("|".join(f"(?:{p})" for p in patterns), re.I) if patterns else None
@@ -28,6 +30,8 @@ class Profile:
     home: re.Pattern | None = None
     remote_ok: re.Pattern | None = None
     hard_exclude: list = field(default_factory=list)
+    require_any: list = field(default_factory=list)
+    require_written_in: list = field(default_factory=list)
     categories: list = field(default_factory=list)
     penalties: list = field(default_factory=list)
 
@@ -43,7 +47,12 @@ class Profile:
         p.title_exclude = _any(raw["titles"].get("exclude", []))
         p.home = _places(raw["location"].get("home", []))
         p.remote_ok = _places(raw["location"].get("remote_ok", []))
-        p.hard_exclude = [re.compile(x, re.I) for x in raw.get("rules", {}).get("hard_exclude", [])]
+        rules = raw.get("rules", {})
+        p.hard_exclude = [re.compile(x, re.I) for x in rules.get("hard_exclude", [])]
+        p.require_any = [re.compile(x, re.I) for x in rules.get("require_any", [])]
+        p.require_written_in = [x.lower() for x in rules.get("require_written_in", [])]
+        if unknown := set(p.require_written_in) - set(STOPWORDS):
+            raise ValueError(f"{path}: require_written_in supports {sorted(STOPWORDS)}, not {sorted(unknown)}")
         p.categories = raw.get("scoring", {}).get("category", [])
         p.penalties = raw.get("scoring", {}).get("penalty", [])
         if not p.categories:

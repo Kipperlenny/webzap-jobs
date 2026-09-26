@@ -56,6 +56,38 @@ def salary_below_floor(p, job) -> bool:
     return top < floor
 
 
+# Frequent short words per language – enough to tell which language a job description is written in.
+STOPWORDS = {
+    "german": frozenset(
+        "und der die das nicht mit für wir sie ist auf bei eine einen dich du dein deine ihre ihr "
+        "sowie oder auch zu von im den dem ein unser unsere werden wirst bist".split()
+    ),
+    "english": frozenset("the and of to in for with you we our is are be will on as an or your this that".split()),
+    "spanish": frozenset("el la los las de y en con para que un una por del nuestro nuestra tu es se al".split()),
+    "french": frozenset("le la les des et en pour avec un une vous nous du est au votre notre sur dans".split()),
+    "portuguese": frozenset("o os as em com para que um uma não você nós seu sua do da dos das na no ao".split()),
+}
+
+
+def written_in(text: str) -> str:
+    """The language a description is written in ('german', 'english', …), or '' if it is too short to tell."""
+    words = re.findall(r"[a-zäöüßàâçéèêëîïôûùñáíóú]+", (text or "").lower())[:600]
+    counts = {lang: sum(1 for w in words if w in sw) for lang, sw in STOPWORDS.items()}
+    lang, n = max(counts.items(), key=lambda kv: kv[1])
+    return lang if n >= 12 and n >= 0.08 * len(words) else ""
+
+
+def requirement_missing(p, text: str) -> bool:
+    """[rules] require_any / require_written_in: the posting must match one pattern or be written in one of the
+    languages (e.g. "a language I speak is asked for, or the ad is written in it"). Nothing configured: never missing.
+    """
+    if not p.require_any and not p.require_written_in:
+        return False
+    if any(rx.search(text) for rx in p.require_any):
+        return False
+    return written_in(text) not in p.require_written_in
+
+
 def hard_excluded(p, text: str) -> str:
     """Return the matching snippet if a hard exclusion pattern hits the description."""
     for rx in p.hard_exclude:
@@ -79,4 +111,6 @@ def prefilter(p, job) -> str:
         return "stated salary below floor"
     if hit := hard_excluded(p, job.text):
         return f"excluded: “{hit}”"
+    if requirement_missing(p, job.text):
+        return "requirement not met"  # not listed as a rejection in the digest: most jobs miss it
     return ""
