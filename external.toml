@@ -1,0 +1,153 @@
+# Job sites we can't search automatically: no open interface for a service like ours, or terms that don't allow it.
+# Public and generic – no personal data here. Read by web/external.py.
+#
+# Instead of leaving them out silently, the digest may add up to `max_per_email` of them as clearly labelled external
+# links, with a search already filled in for the person (their role, and their place where the site supports it).
+# Rules, so this never turns into mass mailing:
+#   - only in an email that is sent anyway – never an email just for these links;
+#   - only sites that fit the person: their country, their field, their kind of work, a language they speak;
+#   - the same link at most once every `repeat_days`.
+#
+# Each [[site]]:
+#   name, id       shown name and a stable id
+#   search         URL with {q} (URL-encoded query) or {q_slug} (engineering-manager); optional {where}/{where_slug}
+#   search_where   optional: the same, with a place – used when the person named one
+#   countries      the person must want to work in one of these (English names); empty = anywhere
+#   topics         at least one must appear in their roles, fields, skills or keywords; empty = any field
+#   types          their employment types must include one of these; empty = any
+#   languages      they must speak one of these (from their text or their email language); empty = any
+# Every URL here was checked by hand to open a real result page.
+
+[settings]
+max_per_email = 2
+repeat_days = 30
+
+# ---- country job boards ----
+
+[[site]]
+id = "stepstone-de"
+name = "StepStone"
+search = "https://www.stepstone.de/jobs/{q_slug}"
+search_where = "https://www.stepstone.de/jobs/{q_slug}/in-{where_slug}"
+countries = ["germany"]
+languages = ["german"]
+
+[[site]]
+id = "xing"
+name = "XING Jobs"
+search = "https://www.xing.com/jobs/search?keywords={q}"
+search_where = "https://www.xing.com/jobs/search?keywords={q}&location={where}"
+countries = ["germany", "austria", "switzerland"]
+languages = ["german"]
+
+[[site]]
+id = "karriere-at"
+name = "karriere.at"
+search = "https://www.karriere.at/jobs/{q_slug}"
+search_where = "https://www.karriere.at/jobs/{q_slug}/{where_slug}"
+countries = ["austria"]
+languages = ["german"]
+
+[[site]]
+id = "ams"
+name = "AMS eJob-Room"
+search = "https://jobs.ams.at/public/emps/jobs?query={q}"
+countries = ["austria"]
+languages = ["german"]
+
+[[site]]
+id = "jobs-ch"
+name = "jobs.ch"
+search = "https://www.jobs.ch/de/stellenangebote/?term={q}"
+search_where = "https://www.jobs.ch/de/stellenangebote/?term={q}&location={where}"
+countries = ["switzerland"]
+
+[[site]]
+id = "wttj"
+name = "Welcome to the Jungle"
+search = "https://www.welcometothejungle.com/en/jobs?query={q}"
+countries = ["france"]
+
+[[site]]
+id = "tecnoempleo"
+name = "Tecnoempleo"
+search = "https://www.tecnoempleo.com/ofertas-trabajo/?te={q}"
+countries = ["spain"]
+topics = ["software", "developer", "engineer", "engineering", "it", "data", "devops", "cloud", "cto", "tech",
+  "technology", "programming", "desarrollador", "informática", "sistemas"]
+
+# ---- fields ----
+
+[[site]]
+id = "academics"
+name = "academics.de"
+search = "https://www.academics.de/stellenanzeigen?q={q}"
+countries = ["germany", "austria", "switzerland"]
+languages = ["german"]
+topics = ["research", "science", "scientist", "university", "hochschule", "lecturer", "dozent", "lehrauftrag",
+  "teaching", "professor", "academic", "wissenschaft", "forschung", "lehre"]
+
+[[site]]
+id = "jobs-ac-uk"
+name = "jobs.ac.uk"
+search = "https://www.jobs.ac.uk/search/?keywords={q}"
+countries = ["united kingdom", "ireland"]
+topics = ["research", "science", "scientist", "university", "lecturer", "teaching", "professor", "academic",
+  "faculty", "higher education"]
+
+[[site]]
+id = "euraxess"
+name = "EURAXESS"
+search = "https://euraxess.ec.europa.eu/jobs/search?keywords={q}"
+topics = ["research", "researcher", "science", "scientist", "phd", "postdoc", "laboratory", "academic"]
+
+[[site]]
+id = "interamt"
+name = "Interamt"
+search = "https://www.interamt.de/koop/app/trefferliste?searchText={q}"
+countries = ["germany"]
+languages = ["german"]
+topics = ["public sector", "öffentlicher dienst", "verwaltung", "behörde", "government", "public administration",
+  "ministry", "ministerium", "kommune", "municipal"]
+
+[[site]]
+id = "service-bund"
+name = "service.bund.de"
+search = "https://www.service.bund.de/Content/DE/Stellen/Suche/Formular.html?resultsPerPage=20&templateQueryString={q}"
+countries = ["germany"]
+languages = ["german"]
+topics = ["public sector", "öffentlicher dienst", "verwaltung", "behörde", "government", "public administration",
+  "ministry", "ministerium", "bundeswehr", "federal"]
+
+[[site]]
+id = "epso"
+name = "EU Careers (EPSO)"
+search = "https://eu-careers.europa.eu/en/job-opportunities/open-for-application"
+topics = ["eu institutions", "european commission", "european union", "policy", "public policy", "public sector",
+  "government", "international organisation", "international organization"]
+
+[[site]]
+id = "goodjobs"
+name = "goodjobs.eu"
+search = "https://goodjobs.eu/jobs?search={q}"
+countries = ["germany", "austria", "switzerland"]
+topics = ["sustainability", "sustainable", "nachhaltigkeit", "impact", "social impact", "nonprofit", "non-profit",
+  "ngo", "climate", "klima", "renewable", "circular economy", "gemeinwohl"]
+
+[[site]]
+id = "idealist"
+name = "Idealist"
+search = "https://www.idealist.org/en/jobs?q={q}"
+languages = ["english"]
+topics = ["nonprofit", "non-profit", "ngo", "charity", "social impact", "humanitarian", "foundation",
+  "volunteer management", "advocacy"]
+
+[[site]]
+id = "gulp"
+name = "GULP (Randstad)"
+search = "https://www.gulp.de/gulp2/g/projekte?query={q}"
+countries = ["germany", "austria", "switzerland"]
+languages = ["german"]
+types = ["freelance", "contract"]
+topics = ["software", "developer", "engineer", "engineering", "it", "data", "devops", "cloud", "sap", "consultant",
+  "architect", "project manager", "tech"]

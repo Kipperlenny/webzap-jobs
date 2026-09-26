@@ -16,6 +16,12 @@
 
 {% endfor %}
 {% if disclosure %}{{ _(d ~ "disclosure") }}
+{% endif %}{% if externals %}
+{{ _(d ~ "ext_title") | upper }}
+{% for x in externals %}- [{{ _(d ~ "ext_label") }}] {% if x.where %}{{ _(d ~ "ext_search_where", q=x.query, where=x.where, name=x.name) }}{% else %}{{ _(d ~ "ext_search", q=x.query, name=x.name) }}{% endif +%}
+  {{ x.url }}
+{% endfor %}{{ _(d ~ "ext_note", site=site) }}
+
 {% endif %}
 {{ _(d ~ "edit") }}: {{ manage_url }}
 {{ _(d ~ "unsubscribe") }}: {{ unsubscribe_url }}

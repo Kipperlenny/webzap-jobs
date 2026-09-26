@@ -53,7 +53,15 @@ def _job(j) -> dict:
 
 
 def render(
-    p, picked: dict, notable: list, notable_rules: list, stats: dict, scanned: int, candidates: int, note: str
+    p,
+    picked: dict,
+    notable: list,
+    notable_rules: list,
+    stats: dict,
+    scanned: int,
+    candidates: int,
+    note: str,
+    externals: list[dict] = (),
 ) -> tuple[str, str]:
     rejected = [
         {
@@ -78,5 +86,6 @@ def render(
         "sources_ok": sum(1 for v in stats.values() if isinstance(v, int)),
         "sources_failed": [k for k, v in stats.items() if not isinstance(v, int)],
         "note": note,
+        "externals": list(externals),
     }
     return _env.get_template("digest.html").render(**ctx), _env.get_template("digest.txt").render(**ctx)

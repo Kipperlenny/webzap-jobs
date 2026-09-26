@@ -26,6 +26,18 @@
 {% if disclosure %}
 <p style="color:#6b7280;font-size:12px">{{ _(d ~ "disclosure") }}</p>
 {% endif %}
+{% if externals %}
+<div style="border-top:1px solid #e5e7eb;margin-top:18px;padding-top:10px">
+  <div style="font-weight:600;font-size:14px">{{ _(d ~ "ext_title") }}</div>
+  <ul style="margin:6px 0;padding-left:20px;font-size:14px">
+  {% for x in externals %}
+    <li><span style="background:#f3f4f6;color:#374151;font-size:12px;padding:1px 6px;border-radius:4px">{{ _(d ~ "ext_label") }}</span>
+      <a href="{{ x.url }}" style="color:#0e7490">{% if x.where %}{{ _(d ~ "ext_search_where", q=x.query, where=x.where, name=x.name) }}{% else %}{{ _(d ~ "ext_search", q=x.query, name=x.name) }}{% endif %}</a></li>
+  {% endfor %}
+  </ul>
+  <div style="color:#6b7280;font-size:12px">{{ _(d ~ "ext_note", site=site) }}</div>
+</div>
+{% endif %}
 {% endblock %}
 {% block footer %}
 {{ _(d ~ "footer_" ~ frequency, site=site) }}

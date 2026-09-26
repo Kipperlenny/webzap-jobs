@@ -12,3 +12,7 @@ Strong: {{ counts.strong }} · Possible: {{ counts.possible }} · Consulting: {{
 {% endfor %}
 
 {% endfor %}
+{% if externals %}== Worth checking yourself – external links (not searched automatically) ==
+{% for x in externals %}- [External link] {{ x.name }}{% if x.note %} – {{ x.note }}{% endif +%}
+  {{ x.url }}
+{% endfor %}{% endif %}

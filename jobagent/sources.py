@@ -63,13 +63,27 @@ class Job:
     assessment: dict = field(default_factory=dict)
     score: int = 0
     status: str = ""
+    # set by dedup.dedupe(): the stable id of the opening, the keys of its other copies, how many copies there were
+    uid: str = ""
+    aliases: set[str] = field(default_factory=set)
+    copies: int = 1
 
     @property
-    def key(self) -> str:
-        """Dedup key: normalised company + title, ignoring gender tags and per-country suffixes."""
+    def raw_key(self) -> str:
+        """This copy's key: normalised company + title, ignoring gender tags and per-country suffixes."""
         title = re.sub(r"\s*\((m|f|w|d|x|h)(/(m|f|w|d|x|h))+\)", "", self.title, flags=re.I)
         title = title.split(" | ")[0]  # "Engineering Manager | Germany | Remote" -> one role across countries
         return f"{_norm(self.company)}|{_norm(title)}"
+
+    @property
+    def key(self) -> str:
+        """The opening's id: stable across copies and runs once dedup.dedupe() has run, else this copy's key."""
+        return self.uid or self.raw_key
+
+    @property
+    def all_keys(self) -> tuple[str, ...]:
+        """The id first, then the keys of its other copies – for looking up what we already know about the job."""
+        return (self.key, *sorted(self.aliases - {self.key}))
 
 
 def _norm(s: str) -> str:

@@ -159,6 +159,7 @@ def render_sample(lang: str) -> tuple[str, str]:
         help=None,
         frequency="weekly",
         disclosure=True,
+        externals=[{"name": "StepStone", "url": "#", "query": "Brand Manager", "where": "Hamburg"}],
         manage_url="#",
         unsubscribe_url="#",
     )

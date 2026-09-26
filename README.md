@@ -36,6 +36,8 @@ What happens on each run:
 1. **Fetch once.** Every source that any profile lists is fetched a single time:
    - employer career boards via the public Greenhouse, Lever, Ashby, SmartRecruiters, Personio and Recruitee APIs;
    - the aggregators Remote OK, Arbeitnow, Himalayas and Jobicy.
+   Copies of the same opening are then merged (see *Duplicates and caching* below).
+
 2. **Rules** (for each profile). A posting must pass all of these:
    - the title matches;
    - the location is compatible;
@@ -51,10 +53,14 @@ What happens on each run:
    - writes "why it fits", "concerns", "flags" and "verify before applying".
 
    The code adds up the points, so the totals follow your rubric. A job that has been assessed once is not assessed
-   again. If the model server is offline, the run waits for it (`--wait-hours`).
+   again – not even when it turns up later as another copy – until you change the profile's candidate text, rules,
+   compensation or rubric. If the model server is offline, the run waits for it (`--wait-hours`).
 4. **Digest email.** It has up to N strong matches, N possible matches and N consulting/interim matches. If nothing
    fits, it says so plainly and adds a short list of newly rejected jobs, so near-misses aren't rediscovered. Each job
    is emailed once. An HTML copy of each digest is saved in `data/reports/`.
+5. **External links.** Sites that fit the search but can't be searched automatically go into the profile as
+   `[[external]]` (name, https URL, note). The digest lists up to `max_externals` of them in a clearly marked section,
+   each at most once every `external_repeat_days` (default 30) – a reminder, not a newsletter.
 
 Secrets live in `.env`:
 - `LLM_*` (connectors);
@@ -154,9 +160,39 @@ Turn off auto-tagging (gclid) in Google Ads; it is ignored anyway. Read the numb
   - every job gets 👍/👎 links; 👎 asks for a reason, and "not this company" blocks that company;
   - manage link, one-click unsubscribe (RFC 8058 headers);
   - jobs are never sent twice.
+- **External links** (`external.toml`, `web/external.py`): big job sites we can't search automatically (no open
+  interface for services like ours) aren't left out silently. A digest may end with up to two of them, labelled
+  "External link", with the person's search already filled in (their role, and their place where the site supports
+  it). Only sites that fit the person are offered – their country, field, kind of work and a language they speak –
+  each link at most once a month, and only in an email we send anyway: never an email just for these links. We store
+  only a hash of each link shown (it contains their search).
 - **Transparency:** partner links are labelled "Partner link · <name>". Sponsored jobs (`sponsored.example.toml`,
   real campaigns in `private/sponsored/`) are labelled "Sponsored". Sponsoring is a one-way street: sponsors get
   aggregate numbers only, never subscriber data.
+
+## Duplicates and caching
+
+The same opening appears on the employer's board and on several aggregators, often in slightly different forms:
+"ibm" vs "International Business Machines", "Acme GmbH" vs "ACME", a title cut off at 80 characters, "(m/w/d)",
+"- 100% remote", "Entwickler:in". `jobagent/dedup.py` merges these copies before any matching or model call. It is used by
+both the job agent and the subscriber digest.
+
+- **Merging:** copies merge when the normalised company and title are the same. Company names are compared without
+  legal forms, as initials ("ibm") or with generic extras ("… Labs", "… Agency"). Titles are compared without gender
+  tags, work mode, percentages and time zones. Places are kept, so "Engineer – Spain" and "Engineer – Germany" stay
+  two jobs. Fuzzier cases join only copies from different sources whose descriptions agree (MinHash over word
+  5-grams): similar titles, uncertain company names, and titles cut off by an aggregator. One board never lists a job
+  twice, and companies reuse description boilerplate.
+- **What is kept:** the employer's own posting wins, then the fullest description. Missing salary or employment type
+  is filled in from the other copies.
+- **Stable ids across runs:** a SQLite table (`job_alias`) maps every copy's key, and the normalised company and
+  title, to one id. Stored assessments and "already sent" survive when the copy we saw first disappears or a copy
+  turns up later under another name. Keys that existed before the table keep their meaning. Entries unseen for 90
+  days are dropped.
+- **Scale:** merging uses dictionary lookups; fuzzy checks only run within one title or one company (about 1 s for
+  17,000 postings). In the digest, each subscriber is scored only against jobs whose title contains the key word of
+  one of their roles (`matching.TitleIndex`, exact by construction). Partner-feed searches are normalised, so
+  subscribers with the same search share one request, and they run in parallel. Link checks are cached per run.
 
 ## Text analysis: connectors and queue
 

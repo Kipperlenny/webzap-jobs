@@ -7,7 +7,7 @@ COPY web/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && useradd -r -u 10001 app && mkdir /data && chown app /data
 COPY web/ .
 COPY jobagent/ jobagent/
-COPY digest.toml .
+COPY digest.toml external.toml ./
 USER app
 EXPOSE 8000
 HEALTHCHECK CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz')"

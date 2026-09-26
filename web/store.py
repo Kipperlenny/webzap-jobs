@@ -17,6 +17,8 @@ from contextlib import contextmanager
 
 from cryptography.fernet import Fernet
 
+from jobagent.dedup import AliasBook, create_alias_table
+
 from settings import CONFIRM_TTL_HOURS, DB_PATH, ENCRYPTION_KEY, HASH_PEPPER
 
 FREQUENCIES = ("daily", "weekly", "paused")
@@ -89,6 +91,13 @@ def _migrate(c: sqlite3.Connection):
     for col in ("matched_role", "location"):  # used to learn from feedback ("not my field", "wrong location")
         if col not in sent_cols:
             c.execute(f"ALTER TABLE sent_jobs ADD COLUMN {col} TEXT")
+    # Which job keys are copies of the same opening (see jobagent.dedup) – so nobody gets a job twice.
+    create_alias_table(c, "SELECT DISTINCT job_key AS k FROM sent_jobs")
+    # External links (sites we can't search) shown to a person, so each comes back only after a long pause.
+    c.execute("""CREATE TABLE IF NOT EXISTS external_shown (
+        signup_id INTEGER NOT NULL REFERENCES signups(id) ON DELETE CASCADE,
+        url_hash TEXT NOT NULL, shown_at INTEGER NOT NULL,
+        PRIMARY KEY (signup_id, url_hash))""")
 
 
 @contextmanager
@@ -407,6 +416,34 @@ def mark_digest_sent(signup_id: int):
 def sent_keys(signup_id: int) -> set[str]:
     with _conn() as c:
         return {r[0] for r in c.execute("SELECT job_key FROM sent_jobs WHERE signup_id=?", (signup_id,))}
+
+
+def alias_book(read_only: bool = False) -> AliasBook:
+    return AliasBook(_conn, read_only=read_only)
+
+
+def externals_due(signup_id: int, urls: list[str], repeat_days: int) -> list[str]:
+    """The external links this person hasn't been shown in the last `repeat_days` (stored only as hashes: the links
+    contain their search)."""
+    since = int(time.time()) - repeat_days * 86400
+    with _conn() as c:
+        recent = {
+            r[0]
+            for r in c.execute(
+                "SELECT url_hash FROM external_shown WHERE signup_id=? AND shown_at > ?", (signup_id, since)
+            )
+        }
+    return [u for u in urls if _h(u) not in recent]
+
+
+def mark_externals_shown(signup_id: int, urls: list[str]):
+    now = int(time.time())
+    with _conn() as c:
+        c.executemany(
+            "INSERT INTO external_shown (signup_id, url_hash, shown_at) VALUES (?,?,?) "
+            "ON CONFLICT(signup_id, url_hash) DO UPDATE SET shown_at=excluded.shown_at",
+            [(signup_id, _h(u), now) for u in urls],
+        )
 
 
 FEEDBACK_REEXTRACT = 5  # new votes after which the text is re-analysed together with the feedback

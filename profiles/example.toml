@@ -86,6 +86,8 @@ max_possible = 2
 max_contract = 2
 max_llm_jobs = 25                  # model calls per run (a local model needs ~1-2 min per job)
 none_message = "No verified strong-match roles found today."
+max_externals = 3                  # [[external]] links per digest …
+external_repeat_days = 30          # … each shown again at most once in this many days
 
 [sources]
 aggregators = ["remoteok", "arbeitnow", "himalayas", "jobicy"]
@@ -96,3 +98,10 @@ ashby = ["notion"]
 smartrecruiters = []
 personio = []
 recruitee = []
+
+# Sites that fit your search but can't be searched automatically (no open job feed). They are listed in the digest as
+# clearly marked external links – a few at a time, each at most once per `external_repeat_days`. https only.
+# [[external]]
+# name = "Example company – careers"
+# url = "https://careers.example.com/jobs"
+# note = "own portal, no job feed"

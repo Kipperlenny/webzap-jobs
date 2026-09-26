@@ -23,5 +23,6 @@ os.environ.update(
         "LEGAL_DIR": _legal,
         "LEGAL_BINDING_LANG": "es",
         "DIGEST_CONFIG": os.path.join(os.path.dirname(__file__), "..", "digest.toml"),
+        "EXTERNAL_CONFIG": os.path.join(os.path.dirname(__file__), "..", "external.toml"),
     }
 )

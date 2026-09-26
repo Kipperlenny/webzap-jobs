@@ -42,6 +42,15 @@
   {% for r in rejected %}<tr><td>{{ r.company }}</td><td><a href="{{ r.url }}">{{ r.title }}</a></td><td>{{ r.reason }}</td></tr>{% endfor %}
 </table>
 {% endif %}
+{% if externals %}
+<h3 style="margin-top:26px;color:#555">Worth checking yourself – external links</h3>
+<p style="color:#666;font-size:13px;margin:0 0 6px">These sites can't be searched automatically (no open interface,
+  or their terms don't allow it), so they are not part of the scan above.</p>
+<ul style="font-size:14px;padding-left:20px;margin:0">
+  {% for x in externals %}<li><span style="background:#f3f4f6;font-size:12px;padding:1px 6px;border-radius:4px">External link</span>
+    <a href="{{ x.url }}" style="color:#0e5a8a">{{ x.name }}</a>{% if x.note %} – {{ x.note }}{% endif %}</li>{% endfor %}
+</ul>
+{% endif %}
 <p style="color:#999;font-size:12px;margin-top:28px">Assessed by a local language model against your precision profile.
   Scores and salary estimates are indications, not facts – verify before applying.</p>
 </div>

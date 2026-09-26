@@ -8,6 +8,7 @@ Deliberately strict: an email with one excellent job beats one with ten "maybe"s
 """
 
 import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
@@ -102,6 +103,27 @@ def role_match(title: str, roles: list[str]) -> tuple[float, str]:
         if s > best:
             best, best_role = s, role
     return best, best_role
+
+
+class TitleIndex:
+    """The job pool by title word, built once per run. A job can only match a role whose key word (`_head`) is in
+    its title (see role_match and ROLE_MIN), so looking jobs up by those words finds exactly the jobs worth scoring –
+    instead of scoring every subscriber against every job."""
+
+    def __init__(self, jobs: list):
+        self.jobs = jobs
+        self._by_word: dict[str, list[int]] = defaultdict(list)
+        for i, job in enumerate(jobs):
+            for w in set(words(job.title)):
+                self._by_word[w].append(i)
+
+    def candidates(self, roles: list[str]) -> list:
+        ids: set[int] = set()
+        for role in roles:
+            role_words = [w for w in words(role) if w not in MODIFIERS]
+            if role_words:
+                ids.update(self._by_word.get(_head(role, role_words), ()))
+        return [self.jobs[i] for i in sorted(ids)]
 
 
 def location_match(job, d: dict) -> tuple[str, str]:

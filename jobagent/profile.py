@@ -65,6 +65,16 @@ class Profile:
         return self.raw.get("sources", {})
 
     @property
+    def externals(self) -> list[dict]:
+        """[[external]] sites to check by hand (not searchable automatically): {name, url, note}. https only."""
+        out = []
+        for x in self.raw.get("external", []):
+            if not str(x.get("url", "")).startswith("https://"):
+                raise ValueError(f"{self.path}: [[external]] {x.get('name')!r} needs an https:// url")
+            out.append({"name": x["name"], "url": x["url"], "note": x.get("note", "")})
+        return out
+
+    @property
     def max_points(self) -> int:
         return sum(int(c["points"]) for c in self.categories)
 

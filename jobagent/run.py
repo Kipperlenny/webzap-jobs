@@ -4,26 +4,17 @@ import argparse
 import concurrent.futures as cf
 import logging
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from . import assess, filters, mailer, report
 from .common import load_env, url_alive
 from .config import ENV_FILES, EXAMPLE_PROFILE, PRIVATE_PROFILES, REPORT_DIR
+from .dedup import dedupe
 from .profile import discover
 from .sources import enrich, fetch, merge_specs
 from .store import Store
 
 log = logging.getLogger("jobagent")
-
-
-def dedupe(jobs):
-    """One job per key; the employer's own posting wins over aggregator copies."""
-    best = {}
-    for j in jobs:
-        cur = best.get(j.key)
-        if cur is None or (j.direct and not cur.direct):
-            best[j.key] = j
-    return list(best.values())
 
 
 def wait_for_llm(max_hours: float):
@@ -39,10 +30,18 @@ def wait_for_llm(max_hours: float):
         time.sleep(wait)
 
 
+def due_externals(p, store) -> list[dict]:
+    """The profile's [[external]] links not shown in the last `external_repeat_days` – a reminder, not a newsletter."""
+    days = p.out("external_repeat_days", 30)
+    cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat(timespec="seconds")
+    shown = store.externals_shown(p.id)
+    return [x for x in p.externals if shown.get(x["url"], "") < cutoff][: p.out("max_externals", 3)]
+
+
 def run_profile(p, jobs, stats, store, args):
     started = datetime.now(UTC).isoformat(timespec="seconds")
     candidates, rejected_rules = [], []
-    for j in dedupe(jobs):
+    for j in jobs:  # already deduplicated across sources (main)
         if not filters.title_ok(p, j.title):
             continue
         reason = filters.prefilter(p, enrich(j) if j.source == "smartrecruiters" else j)
@@ -57,10 +56,10 @@ def run_profile(p, jobs, stats, store, args):
 
     todo, judged, fresh = [], [], []
     for j in candidates:
-        prev = store.get(p.id, j.key)
+        prev = store.get(p.id, j.all_keys)
         if prev and prev["emailed_at"] and not args.resend:
             continue
-        if prev and prev["assessment"] and prev["assessment"].get("v") == assess.ASSESS_VERSION and not args.reassess:
+        if prev and assess.reusable(p, prev["assessment"]) and not args.reassess:
             j.assessment = prev["assessment"]
             judged.append(j)
         else:
@@ -104,7 +103,7 @@ def run_profile(p, jobs, stats, store, args):
         j.status, reason = assess.classify(p, j, j.assessment)
         j.score = j.assessment["total"]
         store.upsert(p.id, j, j.status, reason, j.assessment)
-    new_rule_rejects = [(j, r) for j, r in rejected_rules if not store.get(p.id, j.key)]
+    new_rule_rejects = [(j, r) for j, r in rejected_rules if not store.get(p.id, j.all_keys)]
     for j, reason in new_rule_rejects:
         store.upsert(p.id, j, "rejected", reason)
     store.commit()
@@ -122,7 +121,10 @@ def run_profile(p, jobs, stats, store, args):
     )[:5]
     notable_rules = new_rule_rejects[:5]
 
-    body_html, body_text = report.render(p, picked, notable, notable_rules, stats, len(jobs), len(candidates), note)
+    externals = due_externals(p, store)
+    body_html, body_text = report.render(
+        p, picked, notable, notable_rules, stats, len(jobs), len(candidates), note, externals
+    )
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     report_path = REPORT_DIR / f"{datetime.now():%Y-%m-%d}-{p.path.stem}.html"
     report_path.write_text(body_html)
@@ -140,6 +142,7 @@ def run_profile(p, jobs, stats, store, args):
         )
         mailer.send(subject, body_html, body_text, to=args.to or p.email)
         store.mark_emailed(p.id, [j.key for v in picked.values() for j in v])
+        store.mark_externals_shown(p.id, [x["url"] for x in externals])
     store.log_run(p.id, started, scanned=len(jobs), candidates=len(candidates), assessed=len(judged), sent=n, note=note)
     store.commit()
     log.info("[%s] report %s, %d jobs in digest", p.name, report_path, n)
@@ -163,8 +166,16 @@ def main():
         queries=sorted({q for p in profiles for q in p.search("queries", [])}),
         jobicy_geo=sorted({g for p in profiles for g in p.sources.get("jobicy_geo", [])}),
     )
-    log.info("fetched %d postings from %d sources for %d profile(s)", len(jobs), len(stats), len(profiles))
     store = Store()
+    copies = len(jobs)
+    jobs = dedupe(jobs, store.aliases())  # once for all profiles: fewer model calls, no job twice
+    log.info(
+        "fetched %d postings (%d distinct) from %d sources for %d profile(s)",
+        copies,
+        len(jobs),
+        len(stats),
+        len(profiles),
+    )
     for p in profiles:
         run_profile(p, jobs, stats, store, args)
 

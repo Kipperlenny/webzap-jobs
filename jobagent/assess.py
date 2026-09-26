@@ -4,9 +4,13 @@ The model returns facts and per-category points; the total score and the classif
 rubric in the profile – not the model's mood – decides what reaches the digest.
 """
 
+import hashlib
+import json
+
 from . import connectors
 
 ASSESS_VERSION = 2
+RUBRIC_PARTS = ("candidate", "rules", "compensation", "scoring")
 
 SALARY_CONFIDENCE = ["stated", "estimated-high-confidence", "estimated-low-confidence", "unknown"]
 
@@ -109,6 +113,18 @@ why_fits / concerns / verify_before_applying: short, concrete bullet sentences i
 verdict. Answer with a single JSON object only."""
 
 
+def rubric(p) -> str:
+    """Fingerprint of everything in a profile the model judges by. A stored assessment is reused only while it
+    matches, so editing the profile gets jobs judged again (still capped by max_llm_jobs per run)."""
+    parts = {k: p.raw.get(k) for k in RUBRIC_PARTS}
+    return hashlib.sha256(json.dumps(parts, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
+
+def reusable(p, a: dict | None) -> bool:
+    """Assessments from before rubric fingerprints existed count as current – re-judging them all would be wasteful."""
+    return bool(a) and a.get("v") == ASSESS_VERSION and a.get("rubric", rubric(p)) == rubric(p)
+
+
 def assess(conn, model, p, job) -> dict:
     user = (
         f"TITLE: {job.title}\nCOMPANY: {job.company}\nLOCATION: {job.location} (remote flag: {job.remote})\n"
@@ -135,7 +151,7 @@ def normalise(p, a: dict) -> dict:
     a["total"] = max(0, round(100 * total / p.max_points)) if p.max_points else 0
     for k in ("flags", "why_fits", "concerns", "verify_before_applying", "language_requirements"):
         a[k] = [str(x) for x in (a.get(k) or []) if x]
-    a["v"] = ASSESS_VERSION
+    a["v"], a["rubric"] = ASSESS_VERSION, rubric(p)
     return a
 
 
