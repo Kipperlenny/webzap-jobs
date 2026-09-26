@@ -32,7 +32,7 @@ email_label = "e-mail"
 email_hint = "Sert uniquement à vous envoyer des offres correspondantes et les liens pour gérer votre inscription."
 freq_label = "à quelle fréquence ?"
 honeypot = "Laissez ce champ vide"
-consent = "J'accepte que mon adresse e-mail et mon texte soient enregistrés pour m'envoyer des offres correspondantes (pouvant inclure des offres sponsorisées et des liens partenaires clairement signalés), et que les ouvertures et clics de ces e-mails soient comptés afin de supprimer les abonnés inactifs – comme décrit dans la <a href=\"{privacy}\">politique de confidentialité</a>. Je peux tout modifier ou supprimer à tout moment."
+consent = "J'accepte que mon adresse e-mail et mon texte soient enregistrés pour m'envoyer des offres correspondantes (pouvant inclure des offres sponsorisées et des liens partenaires clairement signalés) – comme décrit dans la <a href=\"{privacy}\">politique de confidentialité</a>. Je peux tout modifier ou supprimer à tout moment."
 submit = "envoyez-moi le lien de confirmation →"
 
 [index.how]

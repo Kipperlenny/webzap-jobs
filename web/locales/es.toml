@@ -34,7 +34,7 @@ email_label = "email"
 email_hint = "Solo lo usamos para enviarte ofertas que encajan y los enlaces para gestionar tu inscripción."
 freq_label = "¿con qué frecuencia?"
 honeypot = "Deja esto vacío"
-consent = 'Acepto que se guarden mi dirección de email y mi texto para enviarme ofertas de empleo que encajen (que pueden incluir ofertas patrocinadas y enlaces de colaboradores, claramente identificados) y que se cuenten las aperturas y los clics de estos emails para eliminar a los suscriptores inactivos, tal como se describe en la <a href="{privacy}">política de privacidad</a>. Puedo cambiarlo o borrarlo todo en cualquier momento.'
+consent = 'Acepto que se guarden mi dirección de email y mi texto para enviarme ofertas de empleo que encajen (que pueden incluir ofertas patrocinadas y enlaces de colaboradores, claramente identificados), tal como se describe en la <a href="{privacy}">política de privacidad</a>. Puedo cambiarlo o borrarlo todo en cualquier momento.'
 submit = "envíame el enlace de confirmación →"
 
 [index.how]

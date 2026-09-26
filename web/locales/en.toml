@@ -33,7 +33,7 @@ email_label = "email"
 email_hint = "Only used to send you job matches and the links to manage your entry."
 freq_label = "how often?"
 honeypot = "Leave this empty"
-consent = 'I agree that my email address and text are stored to send me job matches (which may include clearly labelled sponsored jobs and partner links), and that opens and clicks of these emails are counted to remove inactive subscribers – as described in the <a href="{privacy}">privacy policy</a>. I can change or delete everything at any time.'
+consent = 'I agree that my email address and text are stored to send me job matches (which may include clearly labelled sponsored jobs and partner links) – as described in the <a href="{privacy}">privacy policy</a>. I can change or delete everything at any time.'
 submit = "send me the confirmation link →"
 
 [index.how]

@@ -33,7 +33,7 @@ email_label = "E-Mail"
 email_hint = "Wird nur verwendet, um dir passende Jobs und die Links zur Verwaltung deines Eintrags zu schicken."
 freq_label = "wie oft?"
 honeypot = "Dieses Feld leer lassen"
-consent = 'Ich bin einverstanden, dass meine E-Mail-Adresse und mein Text gespeichert werden, um mir passende Jobs zu schicken (darunter können klar gekennzeichnete gesponserte Jobs und Partnerlinks sein), und dass Öffnungen und Klicks dieser E-Mails gezählt werden, um inaktive Abonnenten zu entfernen – wie in der <a href="{privacy}">Datenschutzerklärung</a> beschrieben. Ich kann alles jederzeit ändern oder löschen.'
+consent = 'Ich bin einverstanden, dass meine E-Mail-Adresse und mein Text gespeichert werden, um mir passende Jobs zu schicken (darunter können klar gekennzeichnete gesponserte Jobs und Partnerlinks sein) – wie in der <a href="{privacy}">Datenschutzerklärung</a> beschrieben. Ich kann alles jederzeit ändern oder löschen.'
 submit = "schick mir den Bestätigungslink →"
 
 [index.how]
