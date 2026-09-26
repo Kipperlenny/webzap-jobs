@@ -166,6 +166,11 @@ Turn off auto-tagging (gclid) in Google Ads; it is ignored anyway. Read the numb
   it). Only sites that fit the person are offered – their country, field, kind of work and a language they speak –
   each link at most once a month, and only in an email we send anyway: never an email just for these links. We store
   only a hash of each link shown (it contains their search).
+- **Click counts without tracking** (`web/golinks.py`): links to jobs and external sites lead through `/go`, which adds
+  one click to a daily total per link kind and source (e.g. "external · stepstone-de") and forwards. The link is the
+  same for everyone who gets it and holds nothing about the person; only the totals are stored, HEAD requests from link
+  scanners are not counted, and nginx doesn't log `/go` (`deploy/nginx-redact-tokens.conf`). Links are signed, so
+  `/go` only forwards to links from our own emails. `python stats.py` shows the totals.
 - **Transparency:** partner links are labelled "Partner link · <name>". Sponsored jobs (`sponsored.example.toml`,
   real campaigns in `private/sponsored/`) are labelled "Sponsored". Sponsoring is a one-way street: sponsors get
   aggregate numbers only, never subscriber data.

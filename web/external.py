@@ -89,5 +89,7 @@ def suggest(d: dict, lang: str) -> list[dict]:
         url = (site["search_where"] if with_place else site["search"]).format(
             q=quote_plus(query), q_slug=_slug(query), where=quote_plus(where), where_slug=_slug(where)
         )
-        out.append({"name": site["name"], "url": url, "query": query, "where": where if with_place else ""})
+        out.append(
+            {"id": site["id"], "name": site["name"], "url": url, "query": query, "where": where if with_place else ""}
+        )
     return out

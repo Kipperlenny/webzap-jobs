@@ -93,6 +93,10 @@ def _migrate(c: sqlite3.Connection):
             c.execute(f"ALTER TABLE sent_jobs ADD COLUMN {col} TEXT")
     # Which job keys are copies of the same opening (see jobagent.dedup) – so nobody gets a job twice.
     create_alias_table(c, "SELECT DISTINCT job_key AS k FROM sent_jobs")
+    # Clicks on links in our emails, as daily totals per link kind and source – nothing about the person (see golinks).
+    c.execute("""CREATE TABLE IF NOT EXISTS click_stats (
+        day TEXT NOT NULL, kind TEXT NOT NULL, source TEXT NOT NULL, clicks INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (day, kind, source))""")
     # External links (sites we can't search) shown to a person, so each comes back only after a long pause.
     c.execute("""CREATE TABLE IF NOT EXISTS external_shown (
         signup_id INTEGER NOT NULL REFERENCES signups(id) ON DELETE CASCADE,
@@ -625,6 +629,37 @@ def _count(c, campaign: str, event: str):
 def count_visit(campaign: str):
     with _conn() as c:
         _count(c, campaign, "visits")
+
+
+MAX_CLICK_SOURCES = 2000  # per day – a cap, so forged-looking traffic can't grow the table without limit
+
+
+def count_click(kind: str, source: str):
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    with _conn() as c:
+        known = c.execute(
+            "SELECT 1 FROM click_stats WHERE day=? AND kind=? AND source=?", (day, kind, source)
+        ).fetchone()
+        if not known and c.execute("SELECT COUNT(*) FROM click_stats WHERE day=?", (day,)).fetchone()[0] >= (
+            MAX_CLICK_SOURCES
+        ):
+            return
+        c.execute(
+            "INSERT INTO click_stats (day, kind, source, clicks) VALUES (?,?,?,1) "
+            "ON CONFLICT(day, kind, source) DO UPDATE SET clicks=clicks+1",
+            (day, kind, source),
+        )
+
+
+def click_report(days: int = 30) -> list[tuple]:
+    """(kind, source, clicks) summed over the last `days` days, most clicks first."""
+    since = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+    with _conn() as c:
+        return c.execute(
+            "SELECT kind, source, SUM(clicks) FROM click_stats WHERE day >= ? GROUP BY kind, source "
+            "ORDER BY SUM(clicks) DESC",
+            (since,),
+        ).fetchall()
 
 
 def campaign_report(days: int = 30) -> list[tuple]:

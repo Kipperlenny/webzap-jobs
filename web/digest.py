@@ -178,7 +178,7 @@ def send(r: dict, picks: list[Pick], externals: list[dict]):
             p.match,
             lang,
             mailer.link(lang, "/feedback/" + store.record_sent(r["id"], p.job, p.match, p.sponsor_id)),
-            sponsored=bool(p.sponsor_id),
+            sponsor_id=p.sponsor_id,
         )
         for p in picks
     ]
@@ -193,7 +193,7 @@ def send(r: dict, picks: list[Pick], externals: list[dict]):
         help=None if r["first_digest_at"] else mailer.help_box(r["derived"], token, lang),
         frequency=r["frequency"],
         disclosure=any(it["sponsored"] or it["partner"] for it in items),
-        externals=externals,
+        externals=[mailer.external_item(x) for x in externals],
     )
     store.mark_externals_shown(r["id"], [x["url"] for x in externals])
     store.mark_digest_sent(r["id"])

@@ -74,7 +74,7 @@ def test_digest_item_reason_and_source_in_the_persons_language():
     en = mailer.digest_item(job, m, "en", "https://f")
     assert en["why"] == "matches “Product Manager” · remote (worldwide) · mentions saas, b2b"
     assert en["source"] == "via Jooble"
-    assert mailer.digest_item(job, m, "en", "https://f", sponsored=True)["source"] == "sponsored listing"
+    assert mailer.digest_item(job, m, "en", "https://f", sponsor_id="acme-q4")["source"] == "sponsored listing"
     local = mailer.digest_item(
         Job("greenhouse", "A", "PM", "u", direct=True), m._replace(loc_kind="local", where="Lyon"), "en", "f"
     )

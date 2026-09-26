@@ -6,7 +6,7 @@ server {
     server_name example.com www.example.com;
 
     client_max_body_size 64k;
-    access_log /var/log/nginx/access.log redacted;   # needs deploy/nginx-redact-tokens.conf in conf.d
+    access_log /var/log/nginx/access.log redacted if=$webzap_loggable;   # needs deploy/nginx-redact-tokens.conf in conf.d
 
     location / {
         proxy_pass http://127.0.0.1:8010;

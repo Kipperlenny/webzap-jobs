@@ -18,6 +18,7 @@ from fastapi.templating import Jinja2Templates
 from jinja2 import ChoiceLoader, FileSystemLoader, PrefixLoader
 from starlette.concurrency import run_in_threadpool
 
+import golinks
 import i18n
 import mailer
 import store
@@ -113,7 +114,7 @@ async def security_headers(request: Request, call_next):
             "Cache-Control": "no-store",
         }
     )
-    if request.url.path.startswith(("/manage/", "/confirm/", "/delete/", "/feedback/", "/unsubscribe/")):
+    if request.url.path.startswith(("/manage/", "/confirm/", "/delete/", "/feedback/", "/unsubscribe/", "/go")):
         resp.headers["X-Robots-Tag"] = "noindex, nofollow"
     if request.headers.get("x-forwarded-proto") == "https":
         resp.headers["Strict-Transport-Security"] = "max-age=31536000"
@@ -345,6 +346,17 @@ def unsubscribe_do(request: Request, token: str):
     # Also the RFC 8058 one-click endpoint: mail providers POST here directly, so no confirmation step.
     ok = store.unsubscribe(token)
     return page(request, "done.html", 200 if ok else 404, ok=ok, action="unsubscribe", token=token)
+
+
+@app.get("/go")
+def go(request: Request, u: str = "", k: str = "", s: str = "", h: str = ""):
+    """A link from one of our emails: add one to today's total for its kind and source, then forward. Only links we
+    signed are forwarded (no open redirect). HEAD requests – link scanners checking a link – are not counted."""
+    if not golinks.verify(u, k, s, h):
+        return PlainTextResponse("Unknown link.", status_code=404)
+    if request.method == "GET":
+        store.count_click(k, s)
+    return Response(status_code=302, headers={"Location": u})
 
 
 LEGAL_PAGES = ("imprint", "privacy")

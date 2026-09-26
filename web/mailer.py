@@ -10,6 +10,7 @@ from jobagent.common import source_parts
 from jobagent.sources import Job
 
 import extract
+import golinks
 import i18n
 from matching import Match
 from settings import BASE_URL, CONFIRM_TTL_HOURS, CONTACT_EMAIL, MAIL_FROM, REPO_URL
@@ -77,8 +78,10 @@ def help_box(derived: dict | None, token: str, lang: str) -> dict | None:
     }
 
 
-def digest_item(job, match, lang: str, feedback_url: str, sponsored: bool = False) -> dict:
-    """One job as the digest shows it: why it matches and where it comes from, in the person's language."""
+def digest_item(job, match, lang: str, feedback_url: str, sponsor_id: str = "") -> dict:
+    """One job as the digest shows it: why it matches and where it comes from, in the person's language. Its link is
+    counted anonymously per source (golinks)."""
+    sponsored = bool(sponsor_id)
     _ = i18n.translator(lang, markup=False)
     why = [_("email.digest.why_role", role=match.role)]
     if match.where:
@@ -91,13 +94,26 @@ def digest_item(job, match, lang: str, feedback_url: str, sponsored: bool = Fals
         "title": job.title,
         "company": job.company,
         "location": (job.location or "")[:80],
-        "url": job.url,
+        "url": golinks.link(job.url, *_click_source(job, sponsor_id)),
         "why": " · ".join(why),
         "source": _("email.digest.src_sponsored") if sponsored else _(f"email.digest.src_{kind}", name=name),
         "sponsored": sponsored,
         "partner": job.partner,
         "feedback_url": feedback_url,
     }
+
+
+def _click_source(job, sponsor_id: str) -> tuple[str, str]:
+    if sponsor_id:
+        return "sponsored", sponsor_id
+    if job.partner:
+        return "partner", job.partner
+    return "job", job.source
+
+
+def external_item(x: dict) -> dict:
+    """An external link (external.suggest) as the digest shows it: its link counted per site."""
+    return x | {"url": golinks.link(x["url"], "external", x["id"])}
 
 
 def digest_subject(lang: str, n: int) -> str:
@@ -150,7 +166,7 @@ SAMPLE_JOBS = [
 
 def render_sample(lang: str) -> tuple[str, str]:
     """The real digest template, filled with SAMPLE_JOBS – so the sample always looks like what people get."""
-    items = [digest_item(job, m, lang, "#", sponsored=sp) for job, m, sp in SAMPLE_JOBS]
+    items = [digest_item(job, m, lang, "#", sponsor_id="sample" if sp else "") for job, m, sp in SAMPLE_JOBS]
     return render(
         "digest",
         lang,

@@ -1,4 +1,4 @@
-"""Plain numbers for the operator: ad campaigns and sponsored jobs. Nothing here identifies a person.
+"""Plain numbers for the operator: ad campaigns, link clicks and sponsored jobs. Nothing here identifies a person.
 
 docker exec webzap-jobs-web python stats.py            # last 30 days
 docker exec webzap-jobs-web python stats.py --days 7
@@ -20,6 +20,12 @@ def main():
         rate = f"{confirmed / visits:.0%}" if visits else "–"
         print(f"  {name:<24}{visits:>8}{signups:>10}{confirmed:>11}{rate:>7}")
     if not rows:
+        print("  none yet")
+    print(f"\nLink clicks in our emails, last {days} days (per kind and source, no persons):")
+    clicks = store.click_report(days)
+    for kind, source, n in clicks:
+        print(f"  {kind:<10}{source:<34}{n:>8}")
+    if not clicks:
         print("  none yet")
     print("\nSponsored jobs (all time):")
     sponsored = store.sponsored_stats()

@@ -24,7 +24,7 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["jobagent"]
-known-local-folder = ["app", "digest", "external", "extract", "i18n", "mailer", "matching", "settings", "stats", "store", "worker"]
+known-local-folder = ["app", "digest", "external", "extract", "golinks", "i18n", "mailer", "matching", "settings", "stats", "store", "worker"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
