@@ -98,6 +98,9 @@ How it handles requests:
 
 Server setup (GitHub CLI, nginx, Let's Encrypt): `DOMAIN=example.com EMAIL=you@example.com bash deploy/setup-server.sh`
 
+Search engines and AI assistants get `/robots.txt` (everything public may be read), `/sitemap.xml` (all languages,
+with hreflang), `/llms.txt` (a plain summary of the service), Open Graph tags and schema.org data on the landing page.
+
 ### Languages
 
 The site and all emails exist in English, Spanish, French and German (`web/i18n.py`, strings in `web/locales/*.toml`;
@@ -128,8 +131,9 @@ version is legally binding: the other languages then say they are translations a
 ### Ad campaigns without tracking
 
 Put `?c=<name>` on ad links, e.g. `https://example.com/de/?c=gads-de-alerts` (lowercase letters, digits, `-`, `_`).
-The server adds up visits, sign-ups and confirmations per campaign and day – plain numbers, no cookies, no pixels, no
-click IDs. The campaign name travels with the form and stays on an unconfirmed entry only until it is confirmed.
+The server adds up visits, failed sign-up attempts (invalid input or an email that couldn't be sent), sign-ups and
+confirmations per campaign and day – plain numbers, no cookies, no pixels, no click IDs. Crawlers (e.g. AdsBot-Google,
+which fetches every ad's final URL) are recognised by their user agent and not counted as visits. The campaign name travels with the form and stays on an unconfirmed entry only until it is confirmed.
 Turn off auto-tagging (gclid) in Google Ads; it is ignored anyway. Read the numbers with
 `docker exec webzap-jobs-web python stats.py`.
 

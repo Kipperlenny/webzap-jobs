@@ -86,7 +86,10 @@ def _migrate(c: sqlite3.Connection):
     c.execute("""CREATE TABLE IF NOT EXISTS campaign_stats (
         day TEXT NOT NULL, campaign TEXT NOT NULL,
         visits INTEGER NOT NULL DEFAULT 0, signups INTEGER NOT NULL DEFAULT 0, confirmed INTEGER NOT NULL DEFAULT 0,
+        failed INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (day, campaign))""")
+    if "failed" not in {r[1] for r in c.execute("PRAGMA table_info(campaign_stats)")}:  # sign-up attempts with errors
+        c.execute("ALTER TABLE campaign_stats ADD COLUMN failed INTEGER NOT NULL DEFAULT 0")
     sent_cols = {r[1] for r in c.execute("PRAGMA table_info(sent_jobs)")}
     for col in ("matched_role", "location"):  # used to learn from feedback ("not my field", "wrong location")
         if col not in sent_cols:
@@ -616,7 +619,7 @@ def campaign_name(raw: str | None) -> str:
 
 
 def _count(c, campaign: str, event: str):
-    if event not in ("visits", "signups", "confirmed"):
+    if event not in ("visits", "signups", "confirmed", "failed"):
         raise ValueError(event)
     known = c.execute("SELECT 1 FROM campaign_stats WHERE campaign=? LIMIT 1", (campaign,)).fetchone()
     if not known and c.execute("SELECT COUNT(DISTINCT campaign) FROM campaign_stats").fetchone()[0] >= MAX_CAMPAIGNS:
@@ -629,6 +632,12 @@ def _count(c, campaign: str, event: str):
 def count_visit(campaign: str):
     with _conn() as c:
         _count(c, campaign, "visits")
+
+
+def count_failed(campaign: str):
+    """A sign-up attempt from this campaign that was rejected (invalid input) or whose email could not be sent."""
+    with _conn() as c:
+        _count(c, campaign, "failed")
 
 
 MAX_CLICK_SOURCES = 2000  # per day – a cap, so forged-looking traffic can't grow the table without limit
@@ -663,11 +672,11 @@ def click_report(days: int = 30) -> list[tuple]:
 
 
 def campaign_report(days: int = 30) -> list[tuple]:
-    """(campaign, visits, signups, confirmed) summed over the last `days` days, most visits first."""
+    """(campaign, visits, signups, confirmed, failed) summed over the last `days` days, most visits first."""
     since = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
     with _conn() as c:
         return c.execute(
-            """SELECT campaign, SUM(visits), SUM(signups), SUM(confirmed) FROM campaign_stats WHERE day >= ?
-               GROUP BY campaign ORDER BY SUM(visits) DESC""",
+            """SELECT campaign, SUM(visits), SUM(signups), SUM(confirmed), SUM(failed) FROM campaign_stats
+               WHERE day >= ? GROUP BY campaign ORDER BY SUM(visits) DESC""",
             (since,),
         ).fetchall()

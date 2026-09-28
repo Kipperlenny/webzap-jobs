@@ -1,0 +1,31 @@
+# WebZap Jobs
+
+> {{ description }}
+
+## How it works
+
+1. Write freely what you are looking for: your field, interests, last position, where you live, remote or not, salary
+   expectations, and what you do *not* want. Any language works.
+2. Confirm your email address (double opt-in).
+3. Every day the service checks open positions and emails you only the ones that really fit – daily or weekly, as you
+   choose. Strict on purpose: no match means no email.
+
+Sources: {{ boards }} employer career pages (through their public applicant-tracking APIs)
+{%- if aggregators %}, the job boards {{ aggregators | join(", ") }}{% endif %}
+{%- if partners %}, and the partner job search engines {{ partners | join(", ") }}{% endif %}.
+
+## Facts
+
+- Free for job seekers. Sponsored jobs and partner links in the emails are always labelled; neither ever gets the
+  subscriber's email address or text.
+- Languages: {{ langs | join(", ") }} (every page and email).
+- Privacy: no cookies, no trackers, email addresses and texts encrypted at rest; every email has a one-click link to
+  change, pause or delete everything.
+- Open source (MIT): {{ repo_url }}
+
+## Pages
+{% for l, title in titles.items() %}
+- [{{ title }}]({{ base_url }}/{{ l }}/)
+{%- endfor %}
+- [Sample email]({{ base_url }}/en/sample)
+- [Privacy policy]({{ base_url }}/en/privacy)

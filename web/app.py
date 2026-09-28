@@ -18,6 +18,11 @@ from fastapi.templating import Jinja2Templates
 from jinja2 import ChoiceLoader, FileSystemLoader, PrefixLoader
 from starlette.concurrency import run_in_threadpool
 
+from jobagent import feeds
+from jobagent.common import SOURCE_NAMES
+from jobagent.sources import BOARDS
+
+import digest
 import golinks
 import i18n
 import mailer
@@ -94,6 +99,15 @@ def _rate_limited(request: Request) -> bool:
     return False
 
 
+# Crawlers that fetch ad landing pages (AdsBot-Google checks every final URL, ?c= included) and other automated
+# clients. Only used to leave them out of the campaign visit count; the user agent is never stored.
+BOT_RE = re.compile(r"bot|crawl|spider|slurp|preview|inspectiontool|lighthouse|headless|curl|wget|python|http", re.I)
+
+
+def _is_bot(request: Request) -> bool:
+    return bool(BOT_RE.search(request.headers.get("user-agent") or "bot"))
+
+
 CSP = (
     "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; "
     "form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
@@ -151,7 +165,7 @@ def index_page(request, status=200, **ctx):
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, c: str = ""):
     # ?c=<campaign> on ad links: counted as a plain number per day, nothing about the visitor (see privacy policy).
-    if campaign := store.campaign_name(c):
+    if (campaign := store.campaign_name(c)) and not _is_bot(request):
         store.count_visit(campaign)
     return index_page(request, campaign=campaign)
 
@@ -181,6 +195,8 @@ async def signup(
         errors.append(_("errors.consent"))
     form = {"email": email, "wish": wish, "frequency": frequency, "campaign": campaign}
     if errors:
+        if campaign:  # otherwise "0 sign-ups" can't tell "nobody tried" from "people tried and failed"
+            await run_in_threadpool(store.count_failed, campaign)
         return index_page(request, 400, errors=errors, **form)
     # Honeypot filled or too many requests: pretend success, do nothing.
     # Also caps confirmation emails per address (2 per 10 min, 3 per day) so nobody can flood someone's inbox.
@@ -197,6 +213,8 @@ async def signup(
     except Exception:  # noqa: BLE001
         log.exception("sending confirmation failed")
         await run_in_threadpool(store.delete, tokens["delete"])
+        if campaign:
+            await run_in_threadpool(store.count_failed, campaign)
         return index_page(request, 502, errors=[_("errors.send_failed")], **form)
     return page(request, "check_email.html")
 
@@ -403,6 +421,38 @@ def sample_mail(request: Request):
             "Content-Security-Policy": csp,
         },
     )
+
+
+# ---------- for search engines and AI assistants ----------
+
+SITEMAP_PATHS = ("/", "/sample")
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots():
+    # Everyone may read the public pages, AI crawlers included: being found is the point. Pages behind secret links
+    # send "X-Robots-Tag: noindex" (see security_headers).
+    return f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n"
+
+
+@app.get("/sitemap.xml")
+def sitemap(request: Request):
+    return templates.TemplateResponse(request, "sitemap.xml", {"paths": SITEMAP_PATHS}, media_type="application/xml")
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+def llms_txt(request: Request):
+    # A plain summary of the service for AI assistants (https://llmstxt.org). The sources come from digest.toml and
+    # the partner feeds whose keys are set, so the text stays true for every instance.
+    sources = digest.CONFIG.get("sources", {})
+    ctx = {
+        "description": i18n.translator("en", markup=False)("meta.description"),
+        "boards": sum(len(sources.get(kind, [])) for kind in BOARDS),
+        "aggregators": [SOURCE_NAMES.get(a, a) for a in sources.get("aggregators", [])],
+        "partners": [p.title() for p in feeds.active()],
+        "titles": {lang: i18n.translator(lang, markup=False)("meta.title") for lang in i18n.LANGS},
+    }
+    return templates.TemplateResponse(request, "llms.txt", ctx, media_type="text/plain; charset=utf-8")
 
 
 @app.get("/healthz", response_class=PlainTextResponse)

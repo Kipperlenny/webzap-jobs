@@ -15,10 +15,11 @@ def main():
     days = ap.parse_args().days
     rows = store.campaign_report(days)
     print(f"Ad campaigns, last {days} days (links with ?c=<name>):")
-    print(f"  {'campaign':<24}{'visits':>8}{'sign-ups':>10}{'confirmed':>11}{'rate':>7}")
-    for name, visits, signups, confirmed in rows:
+    print(f"  {'campaign':<24}{'visits':>8}{'failed':>8}{'sign-ups':>10}{'confirmed':>11}{'rate':>7}")
+    for name, visits, signups, confirmed, failed in rows:
         rate = f"{confirmed / visits:.0%}" if visits else "–"
-        print(f"  {name:<24}{visits:>8}{signups:>10}{confirmed:>11}{rate:>7}")
+        print(f"  {name:<24}{visits:>8}{failed:>8}{signups:>10}{confirmed:>11}{rate:>7}")
+    print("  (visits without crawlers; failed = sign-up attempts rejected for invalid input or a failed email)")
     if not rows:
         print("  none yet")
     print(f"\nLink clicks in our emails, last {days} days (per kind and source, no persons):")

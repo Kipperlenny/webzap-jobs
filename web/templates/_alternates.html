@@ -2,3 +2,11 @@
 {% for l in langs %}<link rel="alternate" hreflang="{{ l }}" href="{{ base_url }}/{{ l }}{{ path }}">
 {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ base_url }}{{ path }}">
 <link rel="canonical" href="{{ base_url }}/{{ lang }}{{ path }}">
+{# Link previews (chat apps, social networks). #}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WebZap Jobs">
+<meta property="og:title" content="{{ _('meta.title') }}">
+<meta property="og:description" content="{{ _('meta.description') }}">
+<meta property="og:url" content="{{ base_url }}/{{ lang }}{{ path }}">
+<meta property="og:locale" content="{{ {'en': 'en_GB', 'es': 'es_ES', 'fr': 'fr_FR', 'de': 'de_DE'}[lang] }}">
+<meta name="twitter:card" content="summary">

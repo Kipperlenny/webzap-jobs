@@ -1,5 +1,21 @@
 {% extends "base.html" %}
-{% block head %}{% include "_alternates.html" %}{% endblock %}
+{% block head %}{% include "_alternates.html" %}
+{# Structured data for search engines and AI assistants. A data block, not a script: the CSP doesn't apply. #}
+<script type="application/ld+json">{{ {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "WebZap Jobs",
+  "url": base_url ~ "/" ~ lang ~ "/",
+  "description": _("meta.description"),
+  "applicationCategory": "BusinessApplication",
+  "applicationSubCategory": "Job alerts",
+  "operatingSystem": "Any (web browser)",
+  "inLanguage": lang,
+  "isAccessibleForFree": true,
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "sameAs": [repo_url],
+} | tojson }}</script>
+{% endblock %}
 {% block content %}
 <div class="hero">
   <div class="kicker">$ webzap-jobs --describe-your-dream-job</div>
