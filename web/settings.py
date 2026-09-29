@@ -24,6 +24,8 @@ MAIL_FROM = _req("MAIL_FROM")
 # <name>.<lang>.html files here (see README). LEGAL_BINDING_LANG: the version that is legally binding, e.g. "es".
 LEGAL_DIR = Path(os.environ.get("LEGAL_DIR", "/legal"))
 LEGAL_BINDING_LANG = os.environ.get("LEGAL_BINDING_LANG", "")
+# Google Search Console's HTML-file verification for this instance, e.g. "google1234abcd5678ef90.html" (optional).
+GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
 
 CONFIRM_TTL_HOURS = 48
 MIN_TEXT = 20

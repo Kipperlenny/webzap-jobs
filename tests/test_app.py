@@ -202,6 +202,14 @@ def test_pages_for_search_engines_and_ai_assistants(client):
     assert llms.text.startswith("# WebZap Jobs") and "https://jobs.example.com/de/" in llms.text
 
 
+def test_google_site_verification_only_for_the_configured_file(client, monkeypatch):
+    assert client.get("/google1234abcd5678ef90.html").status_code == 404  # not configured
+    monkeypatch.setattr(webapp, "GOOGLE_SITE_VERIFICATION", "google1234abcd5678ef90.html")
+    r = client.get("/google1234abcd5678ef90.html")
+    assert r.status_code == 200 and r.text == "google-site-verification: google1234abcd5678ef90.html"
+    assert client.get("/googleffff.html").status_code == 404
+
+
 def test_llms_txt_lists_the_configured_sources(client, monkeypatch):
     monkeypatch.setitem(webapp.digest.CONFIG, "sources", {"aggregators": ["remoteok"], "lever": ["a", "b"]})
     monkeypatch.setattr(webapp.feeds, "active", lambda: ["jooble"])

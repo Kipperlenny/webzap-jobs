@@ -31,6 +31,7 @@ from settings import (
     BASE_URL,
     CONTACT_EMAIL,
     GIT_COMMIT,
+    GOOGLE_SITE_VERIFICATION,
     LEGAL_BINDING_LANG,
     LEGAL_DIR,
     MAX_TEXT,
@@ -434,6 +435,16 @@ def robots():
     # Everyone may read the public pages, AI crawlers included: being found is the point. Pages behind secret links
     # send "X-Robots-Tag: noindex" (see security_headers).
     return f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n"
+
+
+@app.get("/google{code}.html", response_class=PlainTextResponse)
+def google_site_verification(code: str):
+    # The file Search Console asks for; only the name this instance configured exists. No script, no tag, no request
+    # to Google from our pages.
+    name = f"google{code}.html"
+    if not GOOGLE_SITE_VERIFICATION or name != GOOGLE_SITE_VERIFICATION:
+        return PlainTextResponse("not found", status_code=404)
+    return f"google-site-verification: {name}"
 
 
 @app.get("/sitemap.xml")
