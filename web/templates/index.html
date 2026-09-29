@@ -31,6 +31,16 @@
   <div class="pills">{% for p in _("index.pills") %}<span class="pill"><b>✓</b> {{ p }}</span>{% endfor %}</div>
 </div>
 
+<section class="examples">
+  <h2>{{ _("index.examples.title") }}</h2>
+  <ul class="matches">{% for j in examples %}
+    <li><b>{{ j.title }}</b><span class="meta">{{ j.company }} · {{ j.location }}</span>
+      <span class="why">{{ _("email.digest.why") }}: {{ j.why }}</span>
+      <span class="src">{% if j.sponsored %}<em class="tag">{{ _("email.digest.sponsored") }}</em>{% elif j.partner %}<em class="tag">{{ _("email.digest.partner") }}</em>{% endif %}{{ j.source }}</span></li>{% endfor %}
+  </ul>
+  <p class="small">{{ _("index.examples.note", sample=url("/sample")) }}</p>
+</section>
+
 {% if errors %}<div class="errors" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
 
 <div class="term active" id="start">

@@ -17,8 +17,8 @@ back = "← Zurück zur Startseite"
 language = "Sprache"
 
 [index]
-headline = 'Sag uns, welchen Job du <span class="c">wirklich</span> willst.'
-lead = "WebZap Jobs durchsucht jeden Tag Tausende offene Stellen und schickt dir per E-Mail nur die, die zu dem passen, was du geschrieben hast. Kein Profil zum Ausfüllen, kein Konto, kein Lebenslauf-Upload. Nur deine eigenen Worte."
+headline = "Senior-Jobs in <span class=\"c\">Tech und Produkt</span>. Europaweit."
+lead = "Für erfahrene Leute aus Engineering, Data, Produkt, Design und DevOps – von Lead über Staff und Principal bis Head of. Beschreib, welche Stelle du suchst, remote oder vor Ort, und WebZap Jobs schickt dir täglich oder wöchentlich passende offene Stellen per E-Mail. Ohne Konto, Profil oder Lebenslauf-Upload."
 cta = "beschreib deinen Job ↓"
 trust = 'kostenlos &amp; Open Source – <a href="#code">lies nach, was wir mit deinen Daten machen</a> · <a href="{sample}">sieh dir eine Beispiel-E-Mail an</a>'
 promise_big = "Das hier ist <em>100 % kostenlos</em>. Dein Text wird für genau eine Sache verwendet: <em>dir passende Jobangebote per E-Mail zu schicken</em>."
@@ -26,7 +26,7 @@ promise = "Wir verkaufen deine Daten nie und geben sie nie weiter – es ist ein
 pills = ["für immer kostenlos", "kein Konto", "keine Cookies", "verschlüsselt gespeichert", "Open Source"]
 term_title = "neue Suche"
 wish_label = "Ich möchte …"
-wish_placeholder = "… als Senior Marketing Manager für eine nachhaltige Konsumgütermarke arbeiten. Letzte Position: Marketing Lead bei einem Food-Start-up, Team von 4 Leuten. Ich liebe Markenstrategie und Content, Paid Ads eher weniger. Wohne in Hamburg, offen für Remote, reise gern ab und zu. Gehalt um die 70k. Kein Interesse an Agenturjobs …"
+wish_placeholder = "… als Staff Backend Engineer mit Go oder Python arbeiten, am liebsten an einem Payment-Produkt. Remote aus Berlin, EU-Zeitzonen; einmal im Monat ins Büro ist okay. Mindestens 95.000 € brutto im Jahr. Keine Personalvermittler, kein Krypto, keine häufige Rufbereitschaft …"
 wish_hint = "Nenn dein Fachgebiet, deine Interessen, deine letzte Position, wo du wohnst, ob remote oder nicht, deine Gehaltsvorstellung, was du <em>nicht</em> willst – alles, was dir durch den Kopf geht. Jede Sprache ist okay. Einfach drauflos schreiben!"
 warn = "<strong>Gib weder deinen Namen noch andere persönliche Angaben ein</strong> (Telefon, Adresse, Arbeitgeber, die privat bleiben sollen, Gesundheit usw.). Wir brauchen nur das, was dein Ziel bei der Jobsuche beschreibt."
 email_label = "E-Mail"
@@ -35,6 +35,10 @@ freq_label = "wie oft?"
 honeypot = "Dieses Feld leer lassen"
 consent = 'Ich bin einverstanden, dass meine E-Mail-Adresse und mein Text gespeichert werden, um mir passende Jobs zu schicken (darunter können klar gekennzeichnete gesponserte Jobs und Partnerlinks sein) – wie in der <a href="{privacy}">Datenschutzerklärung</a> beschrieben. Ich kann alles jederzeit ändern oder löschen.'
 submit = "schick mir den Bestätigungslink →"
+
+[index.examples]
+title = "So könnte dein Postfach aussehen"
+note = "Fiktive Beispiele, keine aktuell offenen Stellen. <a href=\"{sample}\">Ganze Beispiel-E-Mail ansehen →</a>"
 
 [index.how]
 title = "so funktioniert’s"
@@ -204,7 +208,7 @@ headline = "Das bekommst du."
 lead = "Eine typische E-Mail: ein paar Jobs, die wirklich passen, warum wir sie ausgewählt haben, und ein Klick, um uns zu sagen, ob wir richtig lagen. Alles darin ist ein Beispiel."
 from = "Von"
 subject = "Betreff"
-intro = "Markenstrategie, Hamburg und bitte keine Agenturen – notiert. Das haben wir diese Woche für dich gefunden."
+intro = "Staff-Rolle im Backend, Payments, remote aus Berlin und bitte keine Personalvermittler – notiert. Das haben wir diese Woche für dich gefunden."
 cta = "beschreib deinen Job →"
 
 [legal]

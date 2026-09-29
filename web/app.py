@@ -159,7 +159,8 @@ def errors_for(request):
 
 
 def index_page(request, status=200, **ctx):
-    return page(request, "index.html", status, snippet=STORE_SNIPPET, snippet_line=STORE_LINE, **ctx)
+    examples = mailer.sample_items(lang_of(request))  # what the sample email shows, before anyone signs up
+    return page(request, "index.html", status, snippet=STORE_SNIPPET, snippet_line=STORE_LINE, examples=examples, **ctx)
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -16,8 +16,8 @@ back = "← Retour à la page d'accueil"
 language = "Langue"
 
 [index]
-headline = "Dites-nous quel emploi vous voulez <span class=\"c\">vraiment</span>."
-lead = "Chaque jour, WebZap Jobs passe en revue des milliers d'offres ouvertes et ne vous envoie par e-mail que celles qui correspondent à ce que vous avez écrit. Pas de profil à remplir, pas de compte, pas de CV à télécharger. Juste vos propres mots."
+headline = "Des postes senior en <span class=\"c\">tech et produit</span>, partout en Europe."
+lead = "Pour les profils expérimentés en engineering, data, produit, design et DevOps – de Lead à Staff, Principal ou Head of. Décrivez le poste que vous cherchez, en remote ou sur site, et WebZap Jobs vous envoie par e-mail les offres ouvertes qui correspondent, chaque jour ou chaque semaine. Sans compte, sans profil, sans CV à téléverser."
 cta = "décrivez votre emploi ↓"
 trust = "gratuit &amp; open source – <a href=\"#code\">découvrez ce que nous faisons de vos données</a> · <a href=\"{sample}\">voir un exemple d'e-mail</a>"
 promise_big = "C'est <em>100 % gratuit</em>. Votre texte sert à une seule chose : <em>vous envoyer par e-mail des offres d'emploi sur mesure</em>."
@@ -25,7 +25,7 @@ promise = "Nous ne vendons ni ne partageons jamais vos données – c'est à sen
 pills = ["gratuit pour toujours", "sans compte", "sans cookies", "stockage chiffré", "open source"]
 term_title = "nouvelle recherche"
 wish_label = "Je veux…"
-wish_placeholder = "…travailler comme senior marketing manager pour une marque de consommation durable. Dernier poste : responsable marketing dans une start-up alimentaire, équipe de 4 personnes. J'adore la stratégie de marque et le contenu, moins la publicité payante. Basée à Hambourg, ouverte au télétravail, d'accord pour voyager de temps en temps. Salaire autour de 70 k. Les agences ne m'intéressent pas…"
+wish_placeholder = "…travailler comme Staff Backend Engineer en Go ou Python, idéalement sur un produit de paiement. En remote depuis Berlin, fuseaux horaires UE ; passer au bureau une fois par mois me convient. Au moins 95 000 € brut par an. Pas de cabinets de recrutement, pas de crypto, pas d'astreintes fréquentes…"
 wish_hint = "Indiquez votre domaine, vos centres d'intérêt, votre dernier poste, où vous vivez, télétravail ou non, vos prétentions salariales, ce que vous <em>ne</em> voulez <em>pas</em> – tout ce qui vous passe par la tête. Toutes les langues sont acceptées. Lâchez-vous !"
 warn = "<strong>N'indiquez pas votre nom ni d'autres données personnelles</strong> (téléphone, adresse, noms d'employeurs que vous souhaitez garder confidentiels, santé, etc.). Nous avons seulement besoin de ce qui décrit votre recherche d'emploi."
 email_label = "e-mail"
@@ -34,6 +34,10 @@ freq_label = "à quelle fréquence ?"
 honeypot = "Laissez ce champ vide"
 consent = "J'accepte que mon adresse e-mail et mon texte soient enregistrés pour m'envoyer des offres correspondantes (pouvant inclure des offres sponsorisées et des liens partenaires clairement signalés) – comme décrit dans la <a href=\"{privacy}\">politique de confidentialité</a>. Je peux tout modifier ou supprimer à tout moment."
 submit = "envoyez-moi le lien de confirmation →"
+
+[index.examples]
+title = "Ce qui pourrait arriver dans votre boîte mail"
+note = "Exemples fictifs, pas des offres ouvertes en ce moment. <a href=\"{sample}\">Voir l'e-mail d'exemple complet →</a>"
 
 [index.how]
 title = "comment ça marche"
@@ -203,7 +207,7 @@ headline = "Ce que vous recevrez."
 lead = "Un e-mail typique : quelques offres qui correspondent vraiment, pourquoi nous les avons choisies, et un clic pour nous dire si nous avons vu juste. Tout ce qu'il contient est un exemple."
 from = "De"
 subject = "Objet"
-intro = "Stratégie de marque, Hambourg, et surtout pas d'agences – c'est noté. Voici ce que nous avons trouvé pour vous cette semaine."
+intro = "Backend niveau Staff, paiements, en remote depuis Berlin, et surtout pas de cabinets – c'est noté. Voici ce que nous avons trouvé pour vous cette semaine."
 cta = "décrivez votre emploi →"
 
 [legal]

@@ -143,30 +143,33 @@ def send_digest(to: str, lang: str, token: str, items: list[dict], **ctx):
 
 
 # Made-up jobs for the sample email on the website (/sample). They show every label a real digest can carry.
-SAMPLE_JOBS = [
+SAMPLE_JOBS = [  # fictional companies; the person from the form's example (index.wish_placeholder)
     (
-        Job(
-            "greenhouse", "Greenfield Foods", "Senior Brand Manager – Plant-based", "#", location="Hamburg", direct=True
-        ),
-        Match(0, "", "Senior Brand Manager", "local", "Hamburg", ("brand strategy", "sustainability")),
+        Job("greenhouse", "Northbank", "Staff Backend Engineer – Payments", "#", location="Remote (EU)", direct=True),
+        Match(0, "", "Staff Backend Engineer", "remote", "EU", ("Go", "payments")),
         False,
     ),
     (
-        Job("jooble", "Northwind Outdoor", "Head of Content Marketing", "#", location="Remote", partner="Jooble"),
-        Match(0, "", "Content Marketing Lead", "remote", "Germany", ("content",)),
+        Job("jooble", "Fieldnote", "Principal Software Engineer", "#", location="Berlin / remote", partner="Jooble"),
+        Match(0, "", "Principal Software Engineer", "remote", "Germany", ("Python",)),
         False,
     ),
     (
-        Job("sponsored", "Kaleo Cosmetics", "Brand Strategy Lead", "#", location="Hamburg / hybrid", direct=True),
-        Match(0, "", "Brand Strategy Lead", "local", "Hamburg", ("consumer brand",)),
+        Job("sponsored", "Clearpath", "Lead Backend Engineer – Checkout", "#", location="Remote (Europe)", direct=True),
+        Match(0, "", "Lead Backend Engineer", "remote", "Europe", ("payments", "EU time zones")),
         True,
     ),
 ]
 
 
+def sample_items(lang: str) -> list[dict]:
+    """SAMPLE_JOBS as the digest shows them – for the sample email and the examples on the start page."""
+    return [digest_item(job, m, lang, "#", sponsor_id="sample" if sp else "") for job, m, sp in SAMPLE_JOBS]
+
+
 def render_sample(lang: str) -> tuple[str, str]:
     """The real digest template, filled with SAMPLE_JOBS – so the sample always looks like what people get."""
-    items = [digest_item(job, m, lang, "#", sponsor_id="sample" if sp else "") for job, m, sp in SAMPLE_JOBS]
+    items = sample_items(lang)
     return render(
         "digest",
         lang,
@@ -175,7 +178,7 @@ def render_sample(lang: str) -> tuple[str, str]:
         help=None,
         frequency="weekly",
         disclosure=True,
-        externals=[{"name": "StepStone", "url": "#", "query": "Brand Manager", "where": "Hamburg"}],
+        externals=[{"name": "StepStone", "url": "#", "query": "Staff Backend Engineer", "where": "Berlin"}],
         manage_url="#",
         unsubscribe_url="#",
     )

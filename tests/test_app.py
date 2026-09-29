@@ -166,7 +166,16 @@ def test_sample_email_page_and_its_own_csp(client):
     mail = client.get("/es/sample/mail")
     assert "style-src 'unsafe-inline'" in mail.headers["content-security-policy"]
     assert "script-src" not in mail.headers["content-security-policy"]  # default-src 'none' covers scripts
-    assert "Greenfield Foods" in mail.text
+    assert "Northbank" in mail.text
+
+
+def test_start_page_names_the_audience_and_shows_the_sample_jobs(client):
+    page = client.get("/de/")
+    assert "Tech und Produkt" in page.text and "Staff Backend Engineer" in page.text  # hero and form example
+    for company in ("Northbank", "Fieldnote", "Clearpath"):  # the sample email's jobs, before signing up
+        assert company in page.text
+    assert "Fiktive Beispiele" in page.text and 'href="/de/sample"' in page.text
+    assert "Gesponsert" in page.text or "Sponsored" in page.text  # labels shown as in the email
 
 
 def test_legal_pages_come_from_the_instance_with_fallback_and_binding_note(client):
