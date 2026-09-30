@@ -6,12 +6,23 @@ Strong: {{ counts.strong }} · Possible: {{ counts.possible }} · Consulting: {{
 
 {% endif %}
 {% for section in sections if section.jobs %}== {{ section.label }} ==
-{% for j in section.jobs %}{{ loop.index }}. {{ j.title }} — {{ j.company }}  [{{ j.score }}/100]
+{% for j in section.jobs %}{{ loop.index }}. {{ j.title }} — {{ j.company }}  [{{ j.score }}/100]  id {{ j.id }}
    {{ j.one_line }}
    {{ j.url }}
-{% endfor %}
+{% if j.vote %}   👍 {{ j.vote.up }}
+   👎 {{ j.vote.down }}
+{% endif %}{% endfor %}
 
 {% endfor %}
+{% if learned %}== What the search learned today ==
+{% if learned.titles %}- New job titles: {{ learned.titles | join("; ") }}
+{% endif %}{% if learned.found %}- Job boards found (searched from now on): {{ learned.found | join("; ") }}
+{% endif %}{% if learned.rated %}- Similar companies seen on job sites: {{ learned.rated | join("; ") }}
+{% endif %}{% if learned.suggested %}- Similar companies suggested by the model: {{ learned.suggested | join("; ") }}
+{% endif %}{% if learned.unreadable %}- Check by hand (job site not readable): {{ learned.unreadable | join("; ") }}
+{% endif %}
+
+{% endif %}
 {% if externals %}== Worth checking yourself – external links (not searched automatically) ==
 {% for x in externals %}- [External link] {{ x.name }}{% if x.note %} – {{ x.note }}{% endif +%}
   {{ x.url }}

@@ -31,16 +31,32 @@
   {{ bullets("Concerns", j.concerns, "#9a6700") }}
   {{ bullets("Flags", j.flags, "#b91c1c") }}
   {{ bullets("Verify before applying", j.verify) }}
-  <div style="color:#888;font-size:12px;margin-top:6px">{{ j.source }} · checked {{ checked }} UTC</div>
+  <div style="color:#888;font-size:12px;margin-top:6px">{{ j.source }} · checked {{ checked }} UTC · id {{ j.id }}</div>
+  {% if j.vote %}<div style="margin-top:8px;font-size:14px">
+    <a href="{{ j.vote.up }}" style="text-decoration:none;border:1px solid #cbd5e1;border-radius:4px;padding:3px 10px;color:#1a1a1a">👍 more like this</a>
+    <a href="{{ j.vote.down }}" style="text-decoration:none;border:1px solid #cbd5e1;border-radius:4px;padding:3px 10px;color:#1a1a1a;margin-left:6px">👎 not for me</a>
+  </div>{% endif %}
 </div>
 {% endfor %}
 {% endfor %}
 {% if rejected %}
 <h3 style="margin-top:26px;color:#555">Rejected – not shown again</h3>
 <table style="border-collapse:collapse;font-size:13px;width:100%">
-  <tr style="text-align:left;color:#666"><th>Company</th><th>Role</th><th>Reason</th></tr>
-  {% for r in rejected %}<tr><td>{{ r.company }}</td><td><a href="{{ r.url }}">{{ r.title }}</a></td><td>{{ r.reason }}</td></tr>{% endfor %}
+  <tr style="text-align:left;color:#666"><th>Company</th><th>Role</th><th>Reason</th><th></th></tr>
+  {% for r in rejected %}<tr><td>{{ r.company }}</td><td><a href="{{ r.url }}">{{ r.title }}</a></td><td>{{ r.reason }}</td>
+    <td style="white-space:nowrap">{% if r.vote %}<a href="{{ r.vote.up }}" title="Wrongly rejected – more like this" style="text-decoration:none">👍</a>{% endif %} <span style="color:#aaa;font-size:11px">{{ r.id }}</span></td></tr>{% endfor %}
 </table>
+{% endif %}
+{% if learned %}
+<h3 style="margin-top:26px;color:#555">What the search learned today</h3>
+<ul style="font-size:13px;padding-left:20px;margin:0;color:#444">
+  {% if learned.titles %}<li><b>New job titles</b> the model accepted (your patterns didn't cover them): {{ learned.titles | join("; ") }}</li>{% endif %}
+  {% if learned.found %}<li><b>Job boards found</b> – searched from now on: {{ learned.found | join("; ") }}</li>{% endif %}
+  {% if learned.rated %}<li><b>Similar companies</b> seen on job sites: {{ learned.rated | join("; ") }}</li>{% endif %}
+  {% if learned.suggested %}<li><b>Similar companies</b> suggested by the model: {{ learned.suggested | join("; ") }}</li>{% endif %}
+  {% if learned.unreadable %}<li><b>Check by hand</b> – wanted companies whose job site we can't read: {{ learned.unreadable | join("; ") }}</li>{% endif %}
+</ul>
+<p style="color:#888;font-size:12px">Not right? Vote 👎 on a job with "not this company", or tell the job agent (<code>python3 -m jobagent.feedback company block "Name"</code>).</p>
 {% endif %}
 {% if externals %}
 <h3 style="margin-top:26px;color:#555">Worth checking yourself – external links</h3>

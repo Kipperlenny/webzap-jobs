@@ -27,6 +27,7 @@ class Profile:
     candidate: str = ""
     title_include: list = field(default_factory=list)
     title_exclude: re.Pattern | None = None
+    learn_titles: bool = True
     home: re.Pattern | None = None
     remote_ok: re.Pattern | None = None
     hard_exclude: list = field(default_factory=list)
@@ -34,6 +35,15 @@ class Profile:
     require_written_in: list = field(default_factory=list)
     categories: list = field(default_factory=list)
     penalties: list = field(default_factory=list)
+    # [companies] like / block: names; discovery looks for similar employers and their job boards (companies.py)
+    like_companies: list = field(default_factory=list)
+    block_companies: list = field(default_factory=list)
+    # Filled in each run from the person's 👍/👎 and verdicts (votes.apply)
+    liked_titles: set = field(default_factory=set)
+    blocked_titles: set = field(default_factory=set)
+    liked_companies: dict = field(default_factory=dict)  # company key -> name
+    blocked_companies: set = field(default_factory=set)
+    examples: list = field(default_factory=list)  # "LIKED: title – company", for the model's prompts
 
     @classmethod
     def load(cls, path: Path) -> "Profile":
@@ -45,6 +55,7 @@ class Profile:
         p.candidate = raw.get("candidate", "").strip()
         p.title_include = [re.compile(x, re.I) for x in raw["titles"]["include"]]
         p.title_exclude = _any(raw["titles"].get("exclude", []))
+        p.learn_titles = bool(raw["titles"].get("learn", True))
         p.home = _places(raw["location"].get("home", []))
         p.remote_ok = _places(raw["location"].get("remote_ok", []))
         rules = raw.get("rules", {})
@@ -53,6 +64,8 @@ class Profile:
         p.require_written_in = [x.lower() for x in rules.get("require_written_in", [])]
         if unknown := set(p.require_written_in) - set(STOPWORDS):
             raise ValueError(f"{path}: require_written_in supports {sorted(STOPWORDS)}, not {sorted(unknown)}")
+        p.like_companies = list(raw.get("companies", {}).get("like", []))
+        p.block_companies = list(raw.get("companies", {}).get("block", []))
         p.categories = raw.get("scoring", {}).get("category", [])
         p.penalties = raw.get("scoring", {}).get("penalty", [])
         if not p.categories:
@@ -65,6 +78,9 @@ class Profile:
 
     def out(self, key, default=None):
         return self.raw.get("output", {}).get(key, default)
+
+    def companies(self, key, default=None):
+        return self.raw.get("companies", {}).get(key, default)
 
     def comp(self, key, default=None):
         return self.raw.get("compensation", {}).get(key, default)
@@ -82,6 +98,13 @@ class Profile:
                 raise ValueError(f"{self.path}: [[external]] {x.get('name')!r} needs an https:// url")
             out.append({"name": x["name"], "url": x["url"], "note": x.get("note", "")})
         return out
+
+    def examples_block(self) -> str:
+        """For the model's system prompts: the person's own 👍/👎 (votes.apply) beat any guess."""
+        if not self.examples:
+            return ""
+        lines = "\n".join(f"- {x}" for x in self.examples)
+        return f"\n\nTHE CANDIDATE'S OWN FEEDBACK ON EARLIER JOBS (follow it where it applies):\n{lines}"
 
     @property
     def max_points(self) -> int:

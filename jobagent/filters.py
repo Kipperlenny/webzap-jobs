@@ -4,6 +4,8 @@ import re
 from datetime import UTC, datetime, timedelta
 
 from .common import REMOTE, to_eur
+from .dedup import company_key
+from .titles import norm
 
 CONTRACT = re.compile(
     r"\b(interim|fractional|freelance|freelancer|contractor|contract role|b2b contract|temporary|"
@@ -12,10 +14,13 @@ CONTRACT = re.compile(
 )
 
 
-def title_ok(p, title: str) -> bool:
-    if p.title_exclude and p.title_exclude.search(title):
+def title_ok(p, title: str, learned: dict | None = None) -> bool:
+    """Matches [titles] include (and not exclude), or the model accepted this title earlier (see titles.py), or the
+    person liked it. A title the person voted down as the wrong kind of job never passes."""
+    t = norm(title)
+    if t in p.blocked_titles or (p.title_exclude and p.title_exclude.search(title)):
         return False
-    return any(rx.search(title) for rx in p.title_include)
+    return any(rx.search(title) for rx in p.title_include) or bool(learned and learned.get(t)) or t in p.liked_titles
 
 
 def location_class(p, loc: str, text: str, remote_flag: bool) -> str:
@@ -97,9 +102,11 @@ def hard_excluded(p, text: str) -> str:
     return ""
 
 
-def prefilter(p, job) -> str:
+def prefilter(p, job, learned: dict | None = None, title: bool = True) -> str:
     """'' if the job passes the rules for this profile, else the rejection reason."""
-    if not title_ok(p, job.title):
+    if company_key(job.company) in p.blocked_companies:
+        return "company"
+    if title and not title_ok(p, job.title, learned):
         return "title"
     job.loc_class = location_class(p, job.location, job.text, job.remote)
     job.contract = is_contract(job.title, job.employment_type)
@@ -114,3 +121,18 @@ def prefilter(p, job) -> str:
     if requirement_missing(p, job.text):
         return "requirement not met"  # not listed as a rejection in the digest: most jobs miss it
     return ""
+
+
+def worth_asking(p, job, learned: dict) -> bool:
+    """A title the patterns neither include nor exclude, not decided yet, on a job that passes all other rules – or
+    that lacks only its description (SmartRecruiters and Workday list none; it is fetched once the title is accepted).
+    """
+    t = norm(job.title)
+    if not p.learn_titles or t in learned or t in p.blocked_titles:
+        return False
+    if p.title_exclude and p.title_exclude.search(job.title):
+        return False
+    reason = prefilter(p, job, title=False)
+    if not job.text:  # listed without description (and maybe without location) – decided after the title check
+        return reason in ("", "requirement not met") or (reason == "location" and not job.location)
+    return not reason

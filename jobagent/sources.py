@@ -6,7 +6,9 @@ import logging
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from email.utils import parsedate_to_datetime
+from urllib.parse import urlparse
 
 import requests
 
@@ -300,19 +302,134 @@ def recruitee(company):
     return out
 
 
-def enrich(job):
-    """Fill in the description for sources whose list endpoint has none (SmartRecruiters)."""
-    if job.text or job.source != "smartrecruiters":
-        return job
-    company, jid = job.url.rstrip("/").split("/")[-2:]
-    try:
-        d = get_json(f"https://api.smartrecruiters.com/v1/companies/{company}/postings/{jid}")
-        secs = (d.get("jobAd") or {}).get("sections") or {}
-        job.text = "\n".join(
-            strip_html((secs.get(k) or {}).get("text", ""))
-            for k in ("companyDescription", "jobDescription", "qualifications", "additionalInformation")
+def workable(account):
+    d = get_json(f"https://apply.workable.com/api/v1/widget/accounts/{account}", params={"details": "true"})
+    out = []
+    for j in d.get("jobs", []):
+        loc = ", ".join(filter(None, [j.get("city"), j.get("state"), j.get("country")]))
+        out.append(
+            Job(
+                "workable",
+                d.get("name") or account,
+                j["title"],
+                j.get("url") or j.get("shortlink"),
+                location=loc,
+                remote=str(j.get("telecommuting")).lower() == "true",
+                text=strip_html(j.get("description", "")),
+                posted=parse_dt(j.get("published_on") or j.get("created_at")),
+                employment_type=j.get("employment_type", ""),
+                direct=True,
+            )
         )
-        job.url = d.get("postingUrl") or job.url
+    return out
+
+
+def successfactors(host):
+    """SAP SuccessFactors career sites (e.g. jobs.gft.com): the RSS feed has the newest 20 postings with their full
+    text. Daily runs see every new posting as long as a company posts fewer than 20 a day."""
+    r = requests.get(f"https://{host}/services/rss/job/", params={"locale": "en_US"}, headers=UA, timeout=TIMEOUT)
+    r.raise_for_status()
+    out = []
+    for item in ET.fromstring(r.content).iter("item"):  # noqa: S314 – see personio()
+        raw = (item.findtext("title") or "").strip()
+        m = re.match(r"(.*?)\s*\(([^()]*,[^()]*)\)\s*$", raw)  # "Data Engineer (Warszawa, PL, 00-839)"
+        title, loc = (m.group(1), m.group(2)) if m else (raw, "")
+        parts = [x.strip() for x in loc.split(",")]
+        loc = ", ".join(COUNTRIES.get(x, x) for x in parts if x and not re.search(r"\d", x))
+        out.append(
+            Job(
+                "successfactors",
+                host.split(".")[-2] if host.count(".") >= 1 else host,
+                title,
+                (item.findtext("link") or "").split("?")[0],
+                location=loc,
+                remote=bool(re.search(r"remote", raw, re.I)),
+                text=strip_html(item.findtext("description") or ""),
+                posted=_rfc822(item.findtext("pubDate")),
+                direct=True,
+            )
+        )
+    return out
+
+
+def _rfc822(s: str | None) -> datetime | None:
+    try:
+        return parsedate_to_datetime(s) if s else None
+    except (TypeError, ValueError):
+        return None
+
+
+WORKDAY_PAGES = 25  # 20 postings each – big employers list thousands; the newest 500 are enough for a daily scan
+
+
+def _workday_posted(s: str) -> datetime | None:
+    """'Posted Today' / 'Posted Yesterday' / 'Posted 3 Days Ago' / 'Posted 30+ Days Ago' → a date."""
+    s = (s or "").lower()
+    days = 0 if "today" in s else 1 if "yesterday" in s else None
+    if days is None and (m := re.search(r"(\d+)\+?\s*days?", s)):
+        days = int(m.group(1))
+    return None if days is None else datetime.now(UTC) - timedelta(days=days)
+
+
+def workday(spec):
+    """spec = "tenant/wd5/Site", from a career page on tenant.wd5.myworkdayjobs.com/Site. The list has no
+    descriptions and often only "3 Locations": enrich() fetches both for the jobs that survive the title filter."""
+    tenant, wd, site = spec.split("/")
+    host = f"https://{tenant}.{wd}.myworkdayjobs.com"
+    out, total = [], 0
+    for page in range(WORKDAY_PAGES):
+        r = requests.post(
+            f"{host}/wday/cxs/{tenant}/{site}/jobs",
+            json={"appliedFacets": {}, "limit": 20, "offset": page * 20, "searchText": ""},
+            headers={**UA, "Accept": "application/json"},
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        d = r.json()
+        total = total or d.get("total", 0)  # only the first page carries the total
+        for j in d.get("jobPostings", []):
+            loc = j.get("locationsText", "")
+            out.append(
+                Job(
+                    "workday",
+                    tenant,
+                    j["title"],
+                    f"{host}/{site}{j['externalPath']}",
+                    location="" if re.fullmatch(r"\d+ Locations?", loc) else loc,
+                    remote=bool(re.search(r"remote", loc, re.I)),
+                    posted=_workday_posted(j.get("postedOn", "")),
+                    direct=True,
+                )
+            )
+        if (page + 1) * 20 >= total or not d.get("jobPostings"):
+            break
+    return out
+
+
+def enrich(job):
+    """Fill in the description for sources whose list endpoint has none (SmartRecruiters, Workday)."""
+    if job.text or job.source not in ("smartrecruiters", "workday"):
+        return job
+    try:
+        if job.source == "smartrecruiters":
+            company, jid = job.url.rstrip("/").split("/")[-2:]
+            d = get_json(f"https://api.smartrecruiters.com/v1/companies/{company}/postings/{jid}")
+            secs = (d.get("jobAd") or {}).get("sections") or {}
+            job.text = "\n".join(
+                strip_html((secs.get(k) or {}).get("text", ""))
+                for k in ("companyDescription", "jobDescription", "qualifications", "additionalInformation")
+            )
+            job.url = d.get("postingUrl") or job.url
+        else:
+            u = urlparse(job.url)
+            tenant, site = u.hostname.split(".")[0], u.path.strip("/").split("/")[0]
+            path = u.path.strip("/").split("/", 1)[1]
+            info = get_json(f"https://{u.hostname}/wday/cxs/{tenant}/{site}/{path}").get("jobPostingInfo") or {}
+            job.text = strip_html(info.get("jobDescription", ""))
+            job.location = "; ".join(filter(None, [info.get("location"), *(info.get("additionalLocations") or [])]))
+            job.remote = job.remote or bool(re.search(r"remote", job.location, re.I))
+            job.posted = parse_dt(info.get("startDate")) or job.posted
+            job.employment_type = info.get("timeType", "")
     except Exception as e:  # noqa: BLE001
         log.info("could not enrich %s: %s", job.url, e)
     return job
@@ -453,6 +570,9 @@ BOARDS = {
     "smartrecruiters": smartrecruiters,
     "personio": personio,
     "recruitee": recruitee,
+    "workable": workable,
+    "workday": workday,
+    "successfactors": successfactors,
 }
 
 

@@ -110,7 +110,7 @@ stated" if absent). Salary: use stated numbers (salary_confidence "stated"); oth
 If an EXCLUDE rule clearly applies, exclusion_reason MUST say which – and one_line must agree with it. If it only
 might apply (unclear from the posting), do not exclude: add it to verify_before_applying instead.
 why_fits / concerns / verify_before_applying: short, concrete bullet sentences in English. one_line: a 1-sentence
-verdict. Answer with a single JSON object only."""
+verdict. Answer with a single JSON object only.{p.examples_block()}"""
 
 
 def rubric(p) -> str:

@@ -2,6 +2,7 @@
 
 import asyncio
 import hashlib
+import hmac
 import inspect
 import json
 import logging
@@ -12,13 +13,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import ChoiceLoader, FileSystemLoader, PrefixLoader
 from starlette.concurrency import run_in_threadpool
 
-from jobagent import feeds
+from jobagent import feeds, votes
 from jobagent.common import SOURCE_NAMES
 from jobagent.sources import BOARDS
 
@@ -321,22 +322,15 @@ def manage_delete(request: Request, token: str):
 # ---------- digest links: feedback and unsubscribe ----------
 
 # Stored in English (store.feedback_signals reads them); the form shows them translated via feedback.reasons.<key>.
-FEEDBACK_REASONS = {
-    "field": "not my field",
-    "location": "wrong location",
-    "junior": "too junior",
-    "senior": "too senior",
-    "salary": "salary too low",
-    "company": "not this company",
-    "known": "already applied / known",
-    "other": "other",
-}
+FEEDBACK_REASONS = votes.REASONS
 
 
 # GET only shows a page (mail scanners prefetch links); the vote is stored by the POST.
 @app.get("/feedback/{token}", response_class=HTMLResponse)
 def feedback_page(request: Request, token: str, v: str = "up"):
-    job = store.feedback_get(token)
+    # "a.…" tokens come from the operator's job agent (jobagent/votes.py): signed, and they carry the job themselves.
+    agent_job = votes.verify(token)
+    job = {"title": agent_job["t"], "company": agent_job["c"]} if agent_job else store.feedback_get(token)
     if not job:
         return page(request, "action.html", 404, ok=False, action="feedback")
     return page(
@@ -350,9 +344,20 @@ async def feedback_save(request: Request, token: str):
     vote = "down" if form.get("vote") == "down" else "up"
     # Only predefined reasons – no free text, so no personal data ends up in feedback.
     reason = "; ".join(r for r in form.getlist("reason") if r in FEEDBACK_REASONS.values())
-    if not store.feedback_set(token, vote, reason):
+    if agent_job := votes.verify(token):
+        store.agent_vote_set(agent_job, vote, reason)
+    elif not store.feedback_set(token, vote, reason):
         return page(request, "action.html", 404, ok=False, action="feedback")
     return page(request, "done.html", ok=True, action="feedback", vote=vote)
+
+
+@app.get("/agent-feedback")
+def agent_feedback_export(request: Request, since: int = 0):
+    """The job agent pulls its votes here (jobagent.votes.sync). Key derived from HASH_PEPPER, which both share."""
+    auth = request.headers.get("authorization", "")
+    if not votes.enabled() or not hmac.compare_digest(auth, f"Bearer {votes.api_key()}"):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return JSONResponse({"votes": store.agent_votes_since(since)})
 
 
 @app.get("/unsubscribe/{token}", response_class=HTMLResponse)

@@ -19,7 +19,7 @@ There are two parts:
 The job agent is for people who want **few, precisely matching results** rather than many. Each search is one TOML file,
 a *precision profile*, and each file can go to a different email address. A profile contains:
 - a free-text candidate description;
-- title, location and source settings;
+- title, location and source settings, and optionally companies you want (or companies like them);
 - hard exclusion patterns and plain-language rules;
 - compensation targets (salary and day rate);
 - a weighted scoring rubric with penalties;
@@ -33,13 +33,20 @@ python3 -m jobagent.run private/profiles/me.toml     # one profile, send the dig
 
 What happens on each run:
 
-1. **Fetch once.** Every source that any profile lists is fetched a single time:
-   - employer career boards via the public Greenhouse, Lever, Ashby, SmartRecruiters, Personio and Recruitee APIs;
+1. **Fetch once.** Every source that any profile lists, and every job board company discovery has found, is fetched
+   a single time:
+   - employer career boards via the public Greenhouse, Lever, Ashby, SmartRecruiters, Personio, Recruitee and
+     Workable APIs, Workday career sites and SAP SuccessFactors job feeds;
    - the aggregators Remote OK, Arbeitnow, Himalayas and Jobicy.
    Copies of the same opening are then merged (see *Duplicates and caching* below).
 
+   **Company discovery** (profiles with `[companies] like`): the model rates companies seen on the aggregators and
+   suggests similar ones; their job boards are found on their websites (or by checking likely board names) and are
+   searched from then on. Companies without a readable job site are listed in the digest to check by hand.
+
 2. **Rules** (for each profile). A posting must pass all of these:
-   - the title matches;
+   - the title matches – or, for titles your patterns don't cover, the model accepted it (asked once per title, in
+     batches; the verdicts are stored);
    - the location is compatible;
    - it is recent enough (live postings on the employer's own career system always count as recent);
    - no stated salary is below the floor;
@@ -58,7 +65,12 @@ What happens on each run:
 4. **Digest email.** It has up to N strong matches, N possible matches and N consulting/interim matches. If nothing
    fits, it says so plainly and adds a short list of newly rejected jobs, so near-misses aren't rediscovered. Each job
    is emailed once. An HTML copy of each digest is saved in `data/reports/`.
-5. **External links.** Sites that fit the search but can't be searched automatically go into the profile as
+5. **Feedback.** Each job in the digest has 👍/👎 buttons (they need `BASE_URL` and the web app, which stores the
+   vote; the agent pulls the votes on its next run) and a short id for the command line:
+   `python3 -m jobagent.feedback list | vote ID up|down -r company | company like|block NAME -p PROFILE | companies`.
+   👍 means more of this title and this company; 👎 "not this company" or "not my field" blocks the company or the
+   title. Recent votes are also given to the model as examples.
+6. **External links.** Sites that fit the search but can't be searched automatically go into the profile as
    `[[external]]` (name, https URL, note). The digest lists up to `max_externals` of them in a clearly marked section,
    each at most once every `external_repeat_days` (default 30) – a reminder, not a newsletter.
 

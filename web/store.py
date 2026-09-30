@@ -100,6 +100,11 @@ def _migrate(c: sqlite3.Connection):
     c.execute("""CREATE TABLE IF NOT EXISTS click_stats (
         day TEXT NOT NULL, kind TEXT NOT NULL, source TEXT NOT NULL, clicks INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (day, kind, source))""")
+    # 👍/👎 on the operator's own job-agent digests (jobagent/votes.py): the job comes from the signed link, the agent
+    # pulls the votes back. Nothing about the person voting is stored.
+    c.execute("""CREATE TABLE IF NOT EXISTS agent_votes (
+        profile TEXT NOT NULL, job_key TEXT NOT NULL, title TEXT, company TEXT, vote TEXT NOT NULL, reason TEXT,
+        at INTEGER NOT NULL, PRIMARY KEY (profile, job_key))""")
     # External links (sites we can't search) shown to a person, so each comes back only after a long pause.
     c.execute("""CREATE TABLE IF NOT EXISTS external_shown (
         signup_id INTEGER NOT NULL REFERENCES signups(id) ON DELETE CASCADE,
@@ -562,6 +567,26 @@ def feedback_set(token: str, vote: str, reason: str = "") -> bool:
         if new_votes >= FEEDBACK_REEXTRACT and not open_task:
             _enqueue(c, row[0])
     return True
+
+
+def agent_vote_set(job: dict, vote: str, reason: str = ""):
+    """job: the verified token payload {"p", "k", "t", "c"} (jobagent.votes.verify)."""
+    with _conn() as c:
+        c.execute(
+            "INSERT INTO agent_votes (profile, job_key, title, company, vote, reason, at) VALUES (?,?,?,?,?,?,?) "
+            "ON CONFLICT(profile, job_key) DO UPDATE SET vote=excluded.vote, reason=excluded.reason, at=excluded.at",
+            (job["p"], job["k"], job["t"], job["c"], vote, reason[:200], int(time.time())),
+        )
+
+
+def agent_votes_since(since: int) -> list[dict]:
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT profile, job_key, title, company, vote, reason, at FROM agent_votes WHERE at >= ? ORDER BY at",
+            (since,),
+        ).fetchall()
+    keys = ("profile", "key", "title", "company", "vote", "reason", "at")
+    return [dict(zip(keys, r, strict=True)) for r in rows]
 
 
 def feedback_summary(signup_id: int) -> dict:

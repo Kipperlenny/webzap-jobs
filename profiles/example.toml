@@ -28,6 +28,19 @@ queries = ["senior product manager", "head of product", "lead product manager"]
 [titles]
 include = ["\\b(head|director|vp) of product\\b", "\\b(senior |lead |principal )product manager\\b"]
 exclude = ["\\bintern(ship)?\\b", "\\bjunior\\b", "\\bproject manager\\b"]
+# Titles neither pattern list covers, on jobs that pass all other rules, go to the model once per title in one batched
+# call per run (at most learn_max); accepted ones count as matches from then on and are listed in the digest.
+# learn = true
+# learn_max = 300
+
+# Optional: employers you want, or companies like them. Each run the model rates companies seen on job sites and
+# suggests similar ones; their job boards (Greenhouse, Lever, Ashby, SmartRecruiters, Personio, Recruitee, Workable,
+# Workday, SuccessFactors) are found on their websites and searched from then on. 👍/👎 in the digest (or
+# `python3 -m jobagent.feedback`) teach it more.
+[companies]
+like = ["Contentful", "Personio"]
+# block = ["Some Agency"]
+# discover = true      # rate_max = 100, suggest_max = 15, resolve_max = 40 per run
 
 [location]
 home = ["portugal", "lisbon", "lisboa"]

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from . import votes
 from .common import source_label
 
 _env = Environment(
@@ -27,7 +28,7 @@ def _salary(a: dict) -> str:
     return f"{rng} {a.get('salary_currency', '')} ({a.get('salary_type', '')}, {a.get('salary_confidence', '')})"
 
 
-def _job(j) -> dict:
+def _job(p, j) -> dict:
     a = j.assessment
     office = " · ".join(filter(None, [a.get("office_requirement"), a.get("travel_requirement")])) or "–"
     return {
@@ -49,6 +50,8 @@ def _job(j) -> dict:
         "flags": a.get("flags", []),
         "verify": a.get("verify_before_applying", []),
         "source": source_label(j),
+        "id": votes.short_id(p.id, j.key),
+        "vote": votes.links(p.id, j),
     }
 
 
@@ -62,23 +65,37 @@ def render(
     candidates: int,
     note: str,
     externals: list[dict] = (),
+    learned: dict | None = None,
 ) -> tuple[str, str]:
+    """learned: what the search picked up this run – {"titles", "rated", "suggested", "found", "unreadable"}."""
     rejected = [
         {
             "company": j.company,
             "title": j.title,
             "url": j.url,
             "reason": j.assessment.get("exclusion_reason") or f"score {j.score}",
+            "id": votes.short_id(p.id, j.key),
+            "vote": votes.links(p.id, j),
         }
         for j in notable
     ]
-    rejected += [{"company": j.company, "title": j.title, "url": j.url, "reason": r} for j, r in notable_rules]
+    rejected += [
+        {
+            "company": j.company,
+            "title": j.title,
+            "url": j.url,
+            "reason": r,
+            "id": votes.short_id(p.id, j.key),
+            "vote": votes.links(p.id, j),
+        }
+        for j, r in notable_rules
+    ]
     ctx = {
         "today": datetime.now().strftime("%A, %d %B %Y"),
         "checked": datetime.now(UTC).strftime("%Y-%m-%d %H:%M"),
         "profile_name": p.name,
         "counts": {k: len(v) for k, v in picked.items()},
-        "sections": [{"label": label, "jobs": [_job(j) for j in picked[key]]} for key, label in SECTIONS],
+        "sections": [{"label": label, "jobs": [_job(p, j) for j in picked[key]]} for key, label in SECTIONS],
         "rejected": rejected,
         "none_message": p.out("none_message", "No verified strong-match roles found today."),
         "scanned": scanned,
@@ -87,5 +104,6 @@ def render(
         "sources_failed": [k for k, v in stats.items() if not isinstance(v, int)],
         "note": note,
         "externals": list(externals),
+        "learned": {k: v for k, v in (learned or {}).items() if v},
     }
     return _env.get_template("digest.html").render(**ctx), _env.get_template("digest.txt").render(**ctx)

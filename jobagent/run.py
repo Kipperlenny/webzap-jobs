@@ -6,10 +6,10 @@ import logging
 import time
 from datetime import UTC, datetime, timedelta
 
-from . import assess, filters, mailer, report
+from . import assess, companies, connectors, filters, mailer, report, titles, votes
 from .common import load_env, url_alive
 from .config import ENV_FILES, EXAMPLE_PROFILE, PRIVATE_PROFILES, REPORT_DIR
-from .dedup import dedupe
+from .dedup import company_key, dedupe
 from .profile import discover
 from .sources import enrich, fetch, merge_specs
 from .store import Store
@@ -30,6 +30,40 @@ def wait_for_llm(max_hours: float):
         time.sleep(wait)
 
 
+class LLM:
+    """The model connection, waited for at most once per run – an offline model must not hold up every profile."""
+
+    def __init__(self, wait_hours: float):
+        self.wait_hours, self.tried, self.picked = wait_hours, False, None
+
+    def get(self):
+        if not self.tried:
+            self.picked, self.tried = wait_for_llm(self.wait_hours), True
+        return self.picked
+
+
+def learn_titles(p, unknown: dict[str, list], learned: dict, store, llm) -> tuple[list[str], str]:
+    """Ask the model about titles the patterns don't cover (one batched call, capped per run). Returns the accepted
+    titles and a note if the model was offline; undecided titles are asked again next run."""
+    if not unknown:
+        return [], ""
+    if not (picked := llm.get()):
+        return [], "no LLM online – new titles not checked"
+    asked = dict(list(unknown.items())[: p.raw["titles"].get("learn_max", 300)])
+    note = ""
+    try:
+        verdicts = titles.judge(*picked, p, {t: jobs[0].title for t, jobs in asked.items()})
+    except connectors.Unavailable as e:
+        verdicts, note = {}, "LLM went offline during the title check"
+        log.warning("[%s] %s: %s", p.name, note, e)
+    store.save_title_verdicts(p.id, titles.fingerprint(p), verdicts)
+    store.commit()
+    learned.update(verdicts)
+    accepted = [asked[t][0].title for t, ok in verdicts.items() if ok]
+    log.info("[%s] %d new titles checked, %d accepted: %s", p.name, len(verdicts), len(accepted), "; ".join(accepted))
+    return accepted, note
+
+
 def due_externals(p, store) -> list[dict]:
     """The profile's [[external]] links not shown in the last `external_repeat_days` – a reminder, not a newsletter."""
     days = p.out("external_repeat_days", 30)
@@ -38,17 +72,27 @@ def due_externals(p, store) -> list[dict]:
     return [x for x in p.externals if shown.get(x["url"], "") < cutoff][: p.out("max_externals", 3)]
 
 
-def run_profile(p, jobs, stats, store, args):
+def run_profile(p, jobs, stats, store, args, llm, learned_today=None):
     started = datetime.now(UTC).isoformat(timespec="seconds")
-    candidates, rejected_rules = [], []
-    for j in jobs:  # already deduplicated across sources (main)
-        if not filters.title_ok(p, j.title):
-            continue
-        reason = filters.prefilter(p, enrich(j) if j.source == "smartrecruiters" else j)
+    candidates, rejected_rules, unknown = [], [], {}
+    learned = store.title_verdicts(p.id, titles.fingerprint(p))
+
+    def check(j):
+        reason = filters.prefilter(p, enrich(j), learned)  # enrich: descriptions of list-only sources
         if reason.startswith("excluded"):
             rejected_rules.append((j, reason))
         elif not reason:
             candidates.append(j)
+
+    for j in jobs:  # already deduplicated across sources (main)
+        if filters.title_ok(p, j.title, learned):
+            check(j)
+        elif filters.worth_asking(p, j, learned):
+            unknown.setdefault(titles.norm(j.title), []).append(j)
+    new_titles, note = learn_titles(p, unknown, learned, store, llm)
+    for t in new_titles:
+        for j in unknown[titles.norm(t)]:
+            check(j)
     with cf.ThreadPoolExecutor(8) as ex:
         alive = list(ex.map(url_alive, candidates))
     candidates = [j for j, ok in zip(candidates, alive, strict=False) if ok]
@@ -64,13 +108,19 @@ def run_profile(p, jobs, stats, store, args):
             judged.append(j)
         else:
             todo.append(j)
-    # Most promising first: employer ATS, home area, recent.
-    todo.sort(key=lambda j: (not j.direct, j.loc_class != "local", -(j.posted.timestamp() if j.posted else 0)))
+    # Most promising first: wanted companies, employer ATS, home area, recent.
+    todo.sort(
+        key=lambda j: (
+            company_key(j.company) not in p.liked_companies,
+            not j.direct,
+            j.loc_class != "local",
+            -(j.posted.timestamp() if j.posted else 0),
+        )
+    )
     todo = todo[: args.max_llm if args.max_llm is not None else p.out("max_llm_jobs", 25)]
 
-    note = ""
     if todo:
-        picked = wait_for_llm(args.wait_hours)
+        picked = llm.get()
         if not picked:
             note = "no LLM online – assessment postponed"
             log.warning("[%s] %s; %d jobs stay queued for the next run", p.name, note, len(todo))
@@ -123,7 +173,16 @@ def run_profile(p, jobs, stats, store, args):
 
     externals = due_externals(p, store)
     body_html, body_text = report.render(
-        p, picked, notable, notable_rules, stats, len(jobs), len(candidates), note, externals
+        p,
+        picked,
+        notable,
+        notable_rules,
+        stats,
+        len(jobs),
+        len(candidates),
+        note,
+        externals,
+        {**(learned_today or {}), "titles": new_titles},
     )
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     report_path = REPORT_DIR / f"{datetime.now():%Y-%m-%d}-{p.path.stem}.html"
@@ -157,16 +216,28 @@ def main():
     ap.add_argument("--reassess", action="store_true", help="re-run the model on already assessed jobs")
     ap.add_argument("--max-llm", type=int, help="override the profile's max_llm_jobs (for testing)")
     ap.add_argument("--wait-hours", type=float, default=6, help="how long to wait for an offline LLM (default 6)")
+    ap.add_argument("--no-discovery", action="store_true", help="skip company discovery this run")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_env(ENV_FILES)
     profiles = discover(args.profiles, PRIVATE_PROFILES, EXAMPLE_PROFILE)
-    jobs, stats = fetch(
-        merge_specs([p.sources for p in profiles]),
-        queries=sorted({q for p in profiles for q in p.search("queries", [])}),
-        jobicy_geo=sorted({g for p in profiles for g in p.sources.get("jobicy_geo", [])}),
-    )
     store = Store()
+    queries = sorted({q for p in profiles for q in p.search("queries", [])})
+    jobicy_geo = sorted({g for p in profiles for g in p.sources.get("jobicy_geo", [])})
+    # Configured sources plus every job board company discovery has found so far.
+    jobs, stats = fetch(merge_specs([p.sources for p in profiles] + [store.found_sources()]), queries, jobicy_geo)
+    votes.sync(store)
+    for p in profiles:
+        votes.apply(p, store)
+    llm = LLM(args.wait_hours)
+    learned = {p.id: {} for p in profiles}
+    if not args.no_discovery:
+        new_spec, learned = companies.discover(profiles, jobs, store, llm)
+        if new_spec:  # boards found just now: searched today already
+            more, more_stats = fetch(new_spec)
+            jobs, stats = jobs + more, {**stats, **more_stats}
+        for p in profiles:
+            votes.apply(p, store)  # new company verdicts
     copies = len(jobs)
     jobs = dedupe(jobs, store.aliases())  # once for all profiles: fewer model calls, no job twice
     log.info(
@@ -177,7 +248,7 @@ def main():
         len(profiles),
     )
     for p in profiles:
-        run_profile(p, jobs, stats, store, args)
+        run_profile(p, jobs, stats, store, args, llm, learned[p.id])
 
 
 if __name__ == "__main__":

@@ -91,6 +91,15 @@ _CORP_EXTRA = frozenset(
 )
 
 
+def company_key(name: str) -> str:
+    """One id per company across sources: 'GFT Technologies SE' / 'gft' → 'gft', 'Plain Concepts S.L.' →
+    'plainconcepts'."""
+    tokens = [t for t in company_tokens(name) if len(t) > 1] or list(company_tokens(name))  # "S.L." → s, l
+    while len(tokens) > 1 and tokens[-1] in _CORP_EXTRA:
+        tokens.pop()
+    return _collapsed(tuple(tokens))
+
+
 def company_match(a: tuple[str, ...], b: tuple[str, ...]) -> str:
     """'strong' (same company), 'weak' (maybe – the descriptions must agree) or ''."""
     if not a or not b:

@@ -18,7 +18,10 @@ Settings that differ between instances go into `.env` / the TOML files, not into
     their keys are set).
 - `jobagent/` – separate precision job search for personal TOML profiles (`python3 -m jobagent.run`), runs from cron
   on the host; the LLM assesses every posting that passes the rules (cached per job). Profiles live in
-  `private/profiles/`.
+  `private/profiles/`. It learns instead of relying on fixed lists: `titles.py` (model accepts uncovered titles once
+  per title), `companies.py` (similar companies from `[companies] like` → their job boards), `votes.py` (👍/👎 from
+  the digest via signed links to the web app's `/feedback/`, pulled back from `/agent-feedback`) and `feedback.py`
+  (the same votes on the command line).
 - `digest.toml`, `external.toml` – sources for the digest; `profiles/example.toml` – profile template.
 - `tests/` – pytest; `conftest.py` sets a throw-away env (temp DB, fake keys) before modules import.
 
