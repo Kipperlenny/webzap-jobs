@@ -154,6 +154,14 @@ def recent_pending(email: str, seconds: int) -> int:
         ).fetchone()[0]
 
 
+def pending_since(seconds: int) -> int:
+    """Unconfirmed sign-ups (= confirmation emails sent) in the last `seconds`, all addresses."""
+    with _conn() as c:
+        return c.execute(
+            "SELECT COUNT(*) FROM signups WHERE confirmed_at IS NULL AND created_at > ?", (int(time.time()) - seconds,)
+        ).fetchone()[0]
+
+
 def add_pending(email: str, text: str, frequency: str, lang: str = "en", campaign: str = "") -> dict:
     """Store an unconfirmed signup; returns its fresh tokens {confirm, manage, delete}."""
     t = {k: secrets.token_urlsafe(32) for k in ("confirm", "manage", "delete")}

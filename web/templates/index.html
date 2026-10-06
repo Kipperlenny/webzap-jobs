@@ -64,6 +64,7 @@
     </div>
 
     <div class="hp" aria-hidden="true"><label for="website">{{ _("index.honeypot") }}</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+    <input type="hidden" name="t" value="{{ form_token() }}">
     {% if campaign %}<input type="hidden" name="campaign" value="{{ campaign }}">{% endif %}
 
     <label class="check"><input type="checkbox" name="consent" value="1" required>

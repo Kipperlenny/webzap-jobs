@@ -30,3 +30,8 @@ GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip(
 CONFIRM_TTL_HOURS = 48
 MIN_TEXT = 20
 MAX_TEXT = 5000
+# Against "subscription bombing" (bots entering other people's addresses so we send them confirmation emails): a
+# person needs longer than SIGNUP_MIN_SECONDS to fill in the form, and the whole instance sends at most
+# SIGNUP_MAILS_PER_HOUR confirmation emails per hour.
+SIGNUP_MIN_SECONDS = 3
+SIGNUP_MAILS_PER_HOUR = int(os.environ.get("SIGNUP_MAILS_PER_HOUR", "30"))

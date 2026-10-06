@@ -33,11 +33,14 @@ from settings import (
     CONTACT_EMAIL,
     GIT_COMMIT,
     GOOGLE_SITE_VERIFICATION,
+    HASH_PEPPER,
     LEGAL_BINDING_LANG,
     LEGAL_DIR,
     MAX_TEXT,
     MIN_TEXT,
     REPO_URL,
+    SIGNUP_MAILS_PER_HOUR,
+    SIGNUP_MIN_SECONDS,
 )
 
 log = logging.getLogger("webzap-jobs")
@@ -84,6 +87,23 @@ STORE_LINE = inspect.getsourcelines(store.add_pending)[1]
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,253}\.[a-z]{2,}$", re.I)
 _hits: dict[str, deque] = defaultdict(deque)
 RATE = (5, 3600)  # max 5 sign-ups per IP per hour
+
+
+def form_token(now: float | None = None) -> str:
+    """Signed time the form was shown. No cookie, no JavaScript: it travels as a hidden field."""
+    ts = str(int(time.time() if now is None else now))
+    return f"{ts}.{hmac.new(HASH_PEPPER, b'form:' + ts.encode(), hashlib.sha256).hexdigest()[:24]}"
+
+
+def _form_token_ok(token: str) -> bool:
+    """Shown by us, not too fast for a person, not older than a week."""
+    ts = token.partition(".")[0]
+    if not ts.isdigit() or not hmac.compare_digest(token, form_token(int(ts))):
+        return False
+    return SIGNUP_MIN_SECONDS <= time.time() - int(ts) <= 7 * 86400
+
+
+templates.env.globals["form_token"] = form_token
 
 
 def _rate_limited(request: Request) -> bool:
@@ -182,6 +202,7 @@ async def signup(
     frequency: str = Form("weekly"),
     website: str = Form(""),
     campaign: str = Form(""),
+    t: str = Form(""),
 ):
     email, wish, lang, campaign = email.strip(), wish.strip(), lang_of(request), store.campaign_name(campaign)
     _ = errors_for(request)
@@ -201,14 +222,19 @@ async def signup(
         if campaign:  # otherwise "0 sign-ups" can't tell "nobody tried" from "people tried and failed"
             await run_in_threadpool(store.count_failed, campaign)
         return index_page(request, 400, errors=errors, **form)
-    # Honeypot filled or too many requests: pretend success, do nothing.
-    # Also caps confirmation emails per address (2 per 10 min, 3 per day) so nobody can flood someone's inbox.
+    # Honeypot filled, form not shown by us or sent faster than a person types, or too many requests: pretend
+    # success, do nothing. Also caps confirmation emails per address (2 per 10 min, 3 per day) and for the whole
+    # instance, so nobody can use us to flood someone's inbox.
     if (
         website
+        or not _form_token_ok(t)
         or _rate_limited(request)
         or await run_in_threadpool(store.recent_pending, email, 600) >= 2
         or await run_in_threadpool(store.recent_pending, email, 86400) >= 3
     ):
+        return page(request, "check_email.html")
+    if await run_in_threadpool(store.pending_since, 3600) >= SIGNUP_MAILS_PER_HOUR:
+        log.warning("confirmation emails capped: %d per hour reached", SIGNUP_MAILS_PER_HOUR)
         return page(request, "check_email.html")
     tokens = await run_in_threadpool(store.add_pending, email, wish, frequency, lang, campaign)
     try:

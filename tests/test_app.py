@@ -1,5 +1,6 @@
 import json
 import re
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -21,6 +22,7 @@ def client(monkeypatch):
     webapp._hits.clear()
     with TestClient(webapp.app) as c:
         c.sent = sent
+        c.t = webapp.form_token(time.time() - 10)  # the form as shown 10 s earlier
         yield c
 
 
@@ -36,7 +38,13 @@ def test_security_headers(client):
 def test_signup_validation_and_confirmation_mail(client):
     assert client.post("/signup", data={"email": "bad", "wish": "short"}).status_code == 400
     r = client.post(
-        "/signup", data={"email": "new@example.com", "wish": "I want to lead a nursing team in Madrid.", "consent": "1"}
+        "/signup",
+        data={
+            "email": "new@example.com",
+            "wish": "I want to lead a nursing team in Madrid.",
+            "consent": "1",
+            "t": client.t,
+        },
     )
     assert r.status_code == 200 and client.sent[0][:2] == ("confirmation", "new@example.com")
 
@@ -44,6 +52,16 @@ def test_signup_validation_and_confirmation_mail(client):
 def test_honeypot_pretends_success_without_mail(client):
     r = client.post("/signup", data={"email": "bot@example.com", "wish": "x" * 40, "consent": "1", "website": "spam"})
     assert r.status_code == 200 and not client.sent
+
+
+def test_signups_without_a_fresh_form_token_send_no_mail(client, monkeypatch):
+    data = {"email": "victim@example.com", "wish": "x" * 40, "consent": "1"}
+    assert 'name="t" value="' in client.get("/").text
+    for t in ("", "123.abc", webapp.form_token(), webapp.form_token(time.time() - 8 * 86400), client.t + "0"):
+        r = client.post("/signup", data=data | {"t": t})  # missing, forged, too fast, too old, tampered
+        assert r.status_code == 200 and not client.sent
+    monkeypatch.setattr(webapp, "SIGNUP_MAILS_PER_HOUR", store.pending_since(3600))  # hourly cap reached
+    assert client.post("/signup", data=data | {"t": client.t}).status_code == 200 and not client.sent
 
 
 def test_token_pages_404_and_noindex(client):
@@ -84,7 +102,10 @@ def test_language_from_url_prefix_or_browser(client):
 
 
 def test_signup_stores_language_and_welcome_mail_after_confirm(client):
-    client.post("/fr/signup", data={"email": "fr@example.com", "wish": "Je veux travailler à Lyon.", "consent": "1"})
+    client.post(
+        "/fr/signup",
+        data={"email": "fr@example.com", "wish": "Je veux travailler à Lyon.", "consent": "1", "t": client.t},
+    )
     kind, to, tokens, lang = client.sent[-1]
     assert (kind, lang) == ("confirmation", "fr")
     assert client.post(f"/fr/confirm/{tokens['confirm']}").status_code == 200
@@ -98,7 +119,13 @@ def test_campaign_counts_are_aggregate_and_leave_no_trace(client):
     r = client.get("/de/?c=GAds-DE&gclid=abc")
     assert 'name="campaign" value="gads-de"' in r.text and "abc" not in r.text
     client.get("/?c=<script>")  # invalid names are ignored
-    data = {"email": "ad@example.com", "wish": "Ich suche einen Job in Berlin.", "consent": "1", "campaign": "gads-de"}
+    data = {
+        "email": "ad@example.com",
+        "wish": "Ich suche einen Job in Berlin.",
+        "consent": "1",
+        "campaign": "gads-de",
+        "t": client.t,
+    }
     client.post("/de/signup", data=data)
     tokens = client.sent[-1][2]
     client.post(f"/confirm/{tokens['confirm']}")
@@ -154,7 +181,7 @@ def test_failed_signup_attempts_are_counted_per_campaign(client, monkeypatch):
         raise OSError("smtp down")
 
     monkeypatch.setattr(webapp.mailer, "send_confirmation", fail)
-    good = bad | {"email": "fail@example.com"}
+    good = bad | {"email": "fail@example.com", "t": client.t}
     assert client.post("/de/signup", data=good).status_code == 502
     visits, signups, confirmed, failed = _campaign("gads-fail")
     assert failed == before[3] + 2
