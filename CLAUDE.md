@@ -11,7 +11,8 @@ Settings that differ between instances go into `.env` / the TOML files, not into
   - `app.py` routes · `store.py` all DB access (encryption, hashed tokens, stats counters) · `settings.py` env config
   - `digest.py` daily subscriber digest · `matching.py` strict rule-based matching · `extract.py` + `worker.py`
     turn the free text into search fields via an LLM task queue · `external.py` links to sites we can't search
-    (`external.toml`) · `golinks.py` `/go` click counter · `stats.py` operator numbers · `i18n.py` +
+    (`external.toml`) · `pages.py` public job pages per role × place (`pages.toml`, rebuilt by every digest run) ·
+    `golinks.py` `/go` click counter · `stats.py` operator numbers · `i18n.py` +
     `locales/*.toml` (en, de, es, fr)
   - The LLM runs once per subscriber (on confirmation, text/language change, or after 5 new 👍/👎 votes) to derive
     search fields; matching every posting is rule-based, no LLM. Partner feeds: `jobagent/feeds.py` (active when
@@ -22,7 +23,7 @@ Settings that differ between instances go into `.env` / the TOML files, not into
   per title), `companies.py` (similar companies from `[companies] like` → their job boards), `votes.py` (👍/👎 from
   the digest via signed links to the web app's `/feedback/`, pulled back from `/agent-feedback`) and `feedback.py`
   (the same votes on the command line).
-- `digest.toml`, `external.toml` – sources for the digest; `profiles/example.toml` – profile template.
+- `digest.toml`, `external.toml` – sources for the digest; `pages.toml` – the public job pages; `profiles/example.toml` – profile template.
 - `tests/` – pytest; `conftest.py` sets a throw-away env (temp DB, fake keys) before modules import.
 
 ## Commands

@@ -288,3 +288,18 @@ help_guess_example = "Hemos hecho una primera interpretación de tu texto, p. ej
 help_text = "Estas ofertas se basan en esa interpretación. Para que tus próximas ofertas encajen mucho mejor, nos encantaría saber:"
 help_button = "Cuéntanos más →"
 default_question = "¿Qué tipo de puesto y ámbito buscas, y dónde?"
+
+[jobs]
+title = "Empleos de {role} en {place} – WebZap Jobs"
+description = "{count} ofertas abiertas de {role} en {place} o en remoto, de las páginas de empleo de las empresas. Recibe las nuevas por email: gratis, sin cuenta, sin CV."
+headline = "Empleos de {role} en <span class=\"c\">{place}</span>"
+lead = "{count} ofertas abiertas en empresas de tecnología y software – en {place} o en remoto desde allí, de sus páginas de empleo. Títulos tal como los escriben las empresas. Actualizado: {date}."
+cta = "recibe las nuevas por email ↓"
+list_title = "Abiertas ahora"
+posted = "publicada el {date}"
+more = "…y {n} más. Describe abajo lo que buscas y recibe solo las que encajan."
+alert_title = "Nuevas ofertas de {role} por email"
+alert_text = "El texto de abajo es tu búsqueda: cámbialo como quieras – nivel, salario, remoto o no, lo que no quieres. Te enviamos solo ofertas nuevas que encajan, cada día o cada semana."
+wish = "Busco un puesto de {role} en una empresa de tecnología o software, en {place} o en remoto desde {place}. "
+none = "Ahora no hay ofertas abiertas para esta búsqueda."
+none_lead = "En este momento hay muy pocas ofertas abiertas. Describe en la página de inicio el trabajo que quieres: te escribimos cuando aparezcan ofertas que encajen."

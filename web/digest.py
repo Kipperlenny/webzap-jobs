@@ -5,6 +5,7 @@ new matches, weekly subscribers on `weekly_day`; the very first digest goes out 
 
     python digest.py --dry-run            # print what would be sent, change nothing
     python digest.py --only you@x.com     # one subscriber (with --force: even if not due)
+    python digest.py --pages-only         # only rebuild the public job pages from today's pool
 """
 
 import argparse
@@ -27,6 +28,7 @@ import external
 import extract
 import mailer
 import matching
+import pages
 import store
 
 log = logging.getLogger("webzap-jobs.digest")
@@ -201,18 +203,25 @@ def send(r: dict, picks: list[Pick], externals: list[dict]):
 
 def run(args):
     skip = {x.strip().lower() for x in os.environ.get("DIGEST_SKIP_EMAILS", "").split(",") if x.strip()}
-    recipients = [
-        r
-        for r in store.recipients()
-        if r["derived"]
-        and r["email"].lower() not in skip
-        and (not args.only or r["email"].lower() == args.only.lower())
-        and due(r, args.force)
-    ]
+    recipients = (
+        []
+        if args.pages_only
+        else [
+            r
+            for r in store.recipients()
+            if r["derived"]
+            and r["email"].lower() not in skip
+            and (not args.only or r["email"].lower() == args.only.lower())
+            and due(r, args.force)
+        ]
+    )
     log.info("%d subscriber(s) due", len(recipients))
-    if not recipients:
-        return
+    # Fetched even when nobody is due: the public job pages (pages.py) show today's pool.
     index = matching.TitleIndex(fetch_pool(recipients, args.dry_run))
+    if not args.dry_run:
+        pages.save(index, CONFIG["digest"]["min_score"])
+    if not recipients or args.pages_only:
+        return
     sponsored, sent = load_sponsored(), 0
     for r in recipients:
         picks = select(r, index, sponsored)
@@ -241,6 +250,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", help="only this subscriber email")
     ap.add_argument("--force", action="store_true", help="send even if not due")
+    ap.add_argument("--pages-only", action="store_true", help="only rebuild the job pages (pages.py), send nothing")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     run(ap.parse_args())
 

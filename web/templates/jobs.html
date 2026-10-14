@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{# Blocks in a child template are unconditional, so each one checks for the page itself. #}
+{% block title %}{% if p %}{{ _("jobs.title", role=p.role, place=p.place) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block description %}{% if p %}{{ _("jobs.description", role=p.role, place=p.place, count=p.count) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block head %}{% if p %}{% include "_alternates.html" %}{% else %}<meta name="robots" content="noindex">{% endif %}{% endblock %}
+{% block content %}
+{% if not p %}
+  <h1>{{ _("jobs.none") }}</h1>
+  <p class="lead">{{ _("jobs.none_lead") }}</p>
+  <p><a href="{{ url('/') }}">{{ _("nav.back") }}</a></p>
+{% else %}
+<div class="hero">
+  <div class="kicker">$ webzap-jobs --role {{ role_id }} --place {{ place_id }}</div>
+  <h1>{{ _("jobs.headline", role=p.role, place=p.place) }}</h1>
+  <p class="lead">{{ _("jobs.lead", count=p.count, place=p.place, date=p.date) }}</p>
+  <a class="btn cta" href="#start">{{ _("jobs.cta") }}</a>
+</div>
+
+<section class="examples">
+  <h2>{{ _("jobs.list_title") }}</h2>
+  {# Straight to the posting: no redirect, nothing counted. nofollow – they are the employers' pages, not ours. #}
+  <ul class="matches">{% for j in p.jobs %}
+    <li><b><a href="{{ j.url }}" rel="nofollow noopener">{{ j.title }}</a></b>
+      <span class="meta">{{ j.company }}{% if j.location %} · {{ j.location }}{% endif %}{% if j.posted %} · {{ _("jobs.posted", date=j.posted) }}{% endif %}</span></li>{% endfor %}
+  </ul>
+  {% if p.count > p.jobs|length %}<p class="small">{{ _("jobs.more", n=p.count - p.jobs|length) }}</p>{% endif %}
+</section>
+
+<section>
+  <h2>{{ _("jobs.alert_title", role=p.role) }}</h2>
+  <p>{{ _("jobs.alert_text") }}</p>
+  <div class="pills">{% for x in _("index.pills") %}<span class="pill"><b>✓</b> {{ x }}</span>{% endfor %}</div>
+</section>
+{% include "_signup.html" %}
+<script src="/static/app.js" defer></script>
+{% endif %}
+{% endblock %}

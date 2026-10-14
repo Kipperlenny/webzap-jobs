@@ -286,3 +286,18 @@ help_guess_example = "Nous avons fait une première estimation à partir de votr
 help_text = "Ces offres reposent sur cette estimation. Pour que vos prochaines offres soient bien meilleures, nous aimerions savoir :"
 help_button = "Dites-nous-en plus →"
 default_question = "Quel type de poste et quel domaine recherchez-vous, et où ?"
+
+[jobs]
+title = "Offres {role} en {place} – WebZap Jobs"
+description = "{count} postes ouverts de {role} en {place} ou en télétravail, issus des pages carrières des entreprises. Recevez les nouveaux par e-mail – gratuit, sans compte, sans CV."
+headline = "Offres {role} en <span class=\"c\">{place}</span>"
+lead = "{count} postes ouverts dans des entreprises tech et logiciel – en {place} ou en télétravail depuis ce pays, issus de leurs pages carrières. Intitulés tels que rédigés par les employeurs. Mis à jour : {date}."
+cta = "recevoir les nouveaux par e-mail ↓"
+list_title = "Ouverts maintenant"
+posted = "publié le {date}"
+more = "…et {n} autres. Décrivez ci-dessous ce que vous cherchez et recevez uniquement ceux qui correspondent."
+alert_title = "Nouveaux postes {role} par e-mail"
+alert_text = "Le texte ci-dessous est votre recherche – modifiez-le à votre guise : niveau, salaire, télétravail ou non, ce que vous ne voulez pas. Nous vous envoyons uniquement les nouveaux postes qui correspondent, chaque jour ou chaque semaine."
+wish = "Je cherche un poste de {role} dans une entreprise tech ou logiciel, en {place} ou en télétravail depuis ce pays ({place}). "
+none = "Aucun poste ouvert pour cette recherche en ce moment."
+none_lead = "Il y a trop peu de postes ouverts pour l'instant. Décrivez l'emploi que vous voulez sur la page d'accueil – nous vous écrivons dès que des postes correspondants apparaissent."

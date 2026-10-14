@@ -41,38 +41,7 @@
   <p class="small">{{ _("index.examples.note", sample=url("/sample")) }}</p>
 </section>
 
-{% if errors %}<div class="errors" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
-
-<div class="term active" id="start">
-  <div class="term-bar"><i></i><i></i><i></i><span>~/webzap-jobs — {{ _("index.term_title") }}</span></div>
-  <form method="post" action="{{ url('/signup') }}" class="term-body" novalidate>
-    <label for="wish" class="ask"><span class="p">&gt;</span> {{ _("index.wish_label") }}<span class="cursor waiting" aria-hidden="true"></span></label>
-    <textarea id="wish" name="wish" rows="10" maxlength="{{ max_text }}" required
-      placeholder="{{ _('index.wish_placeholder') }}">{{ wish or "" }}</textarea>
-    <p class="hint">{{ _("index.wish_hint") }} <span id="count" class="mono" aria-live="polite"></span></p>
-
-    <div class="warn" role="note"><b>!</b><span>{{ _("index.warn") }}</span></div>
-
-    <label for="email"><span class="p">&gt;</span> {{ _("index.email_label") }}</label>
-    <input id="email" name="email" type="email" autocomplete="email" required value="{{ email or '' }}" placeholder="you@example.com">
-    <p class="hint">{{ _("index.email_hint") }}</p>
-
-    <label><span class="p">&gt;</span> {{ _("index.freq_label") }}</label>
-    <div class="freq">
-      <label><input type="radio" name="frequency" value="weekly" {% if frequency != "daily" %}checked{% endif %}> {{ _("freq.weekly") }}</label>
-      <label><input type="radio" name="frequency" value="daily" {% if frequency == "daily" %}checked{% endif %}> {{ _("freq.daily") }}</label>
-    </div>
-
-    <div class="hp" aria-hidden="true"><label for="website">{{ _("index.honeypot") }}</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-    <input type="hidden" name="t" value="{{ form_token() }}">
-    {% if campaign %}<input type="hidden" name="campaign" value="{{ campaign }}">{% endif %}
-
-    <label class="check"><input type="checkbox" name="consent" value="1" required>
-      <span>{{ _("index.consent", privacy=url("/privacy")) }}</span></label>
-
-    <button type="submit">{{ _("index.submit") }}</button>
-  </form>
-</div>
+{% include "_signup.html" %}
 
 <section>
   <h2>{{ _("index.how.title") }}</h2>

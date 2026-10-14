@@ -176,6 +176,10 @@ Turn off auto-tagging (gclid) in Google Ads; it is ignored anyway. Read the numb
   - every job gets 👍/👎 links; 👎 asks for a reason, and "not this company" blocks that company;
   - manage link, one-click unsubscribe (RFC 8058 headers);
   - jobs are never sent twice.
+- **Job pages** (`pages.toml`, `web/pages.py`): public pages per role and place, e.g. `/de/jobs/product-manager/germany`,
+  for search ads and search engines. Each lists the open jobs from the day's pool that a subscriber with that search
+  would get (the digest's own matching; partner links excluded) and starts the sign-up form with that search. Rebuilt
+  by every digest run, or alone with `python digest.py --pages-only`; a page with too few jobs or an old pool answers 404.
 - **External links** (`external.toml`, `web/external.py`): big job sites we can't search automatically (no open
   interface for services like ours) aren't left out silently. A digest may end with up to two of them, labelled
   "External link", with the person's search already filled in (their role, and their place where the site supports

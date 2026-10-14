@@ -5,8 +5,8 @@
 {# Link previews (chat apps, social networks). #}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="WebZap Jobs">
-<meta property="og:title" content="{{ _('meta.title') }}">
-<meta property="og:description" content="{{ _('meta.description') }}">
+<meta property="og:title" content="{{ og_title or _('meta.title') }}">
+<meta property="og:description" content="{{ og_description or _('meta.description') }}">
 <meta property="og:url" content="{{ base_url }}/{{ lang }}{{ path }}">
 <meta property="og:locale" content="{{ {'en': 'en_GB', 'es': 'es_ES', 'fr': 'fr_FR', 'de': 'de_DE'}[lang] }}">
 <meta name="twitter:card" content="summary">

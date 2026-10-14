@@ -27,6 +27,7 @@ import digest
 import golinks
 import i18n
 import mailer
+import pages
 import store
 from settings import (
     BASE_URL,
@@ -246,6 +247,29 @@ async def signup(
             await run_in_threadpool(store.count_failed, campaign)
         return index_page(request, 502, errors=[_("errors.send_failed")], **form)
     return page(request, "check_email.html")
+
+
+@app.get("/jobs/{role}/{place}", response_class=HTMLResponse)
+def job_page(request: Request, role: str, place: str, c: str = ""):
+    """A role × place page (pages.toml): today's openings for that search and the sign-up form, starting with it."""
+    if (campaign := store.campaign_name(c)) and not _is_bot(request):
+        store.count_visit(campaign)
+    lang = lang_of(request)
+    p = pages.get(role, place, lang)
+    if not p:
+        return page(request, "jobs.html", 404, p=None)
+    text = i18n.translator(lang, markup=False)
+    return page(
+        request,
+        "jobs.html",
+        p=p,
+        role_id=role,
+        place_id=place,
+        wish=text("jobs.wish", role=p["role"], place=p["place"]),
+        campaign=campaign,
+        og_title=text("jobs.title", role=p["role"], place=p["place"]),
+        og_description=text("jobs.description", role=p["role"], place=p["place"], count=p["count"]),
+    )
 
 
 # Links in emails only show a button; the state change is a POST, so mail scanners that prefetch links can't
@@ -480,7 +504,8 @@ def google_site_verification(code: str):
 
 @app.get("/sitemap.xml")
 def sitemap(request: Request):
-    return templates.TemplateResponse(request, "sitemap.xml", {"paths": SITEMAP_PATHS}, media_type="application/xml")
+    paths = (*SITEMAP_PATHS, *pages.paths())
+    return templates.TemplateResponse(request, "sitemap.xml", {"paths": paths}, media_type="application/xml")
 
 
 @app.get("/llms.txt", response_class=PlainTextResponse)

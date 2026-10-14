@@ -1,0 +1,39 @@
+# Job pages (web/pages.py): one public page per role and place, /<lang>/jobs/<role>/<place>. Each lists the open jobs
+# from the daily pool that a subscriber with this search would get (the digest's own matching), and its sign-up form
+# starts with that search. Made for search ads and search engines: a search for "product manager jobs" lands on
+# product manager jobs. Public and generic – no personal data here.
+
+[settings]
+max_jobs = 25        # jobs listed per page
+min_jobs = 5         # fewer current matches: the page answers 404 – a nearly empty page helps nobody
+max_age_days = 3     # pool snapshot older than this: pages answer 404 rather than show jobs that may be gone
+
+# Roles: `name` per language for headings, `target_roles` in English for the matching (like a subscriber's search),
+# `exclude` title words of neighbouring fields (the matching takes "Product Marketing Manager" for a "Product Manager").
+[roles.product-manager]
+name = { en = "Product Manager", de = "Produktmanager", es = "Product Manager", fr = "Product Manager" }
+target_roles = ["Product Manager", "Senior Product Manager", "Product Owner", "Product Lead", "Head of Product",
+  "Director of Product", "Group Product Manager"]
+exclude = ["marketing", "sales", "support", "operations", "communications", "design", "designer", "analytics"]
+
+[roles.engineering-manager]
+name = { en = "Engineering Manager", de = "Engineering Manager", es = "Engineering Manager", fr = "Engineering Manager" }
+target_roles = ["Engineering Manager", "Senior Engineering Manager", "Head of Engineering", "Director of Engineering",
+  "Software Development Manager", "Team Lead Software Engineering"]
+exclude = ["sales", "customer", "support", "solutions", "value", "field", "presales"]
+
+# Places: a job fits when its location names one of `locations`, or it is remote for one of `remote_regions`.
+[places.germany]
+name = { en = "Germany", de = "Deutschland", es = "Alemania", fr = "Allemagne" }
+locations = ["Germany", "Deutschland", "Berlin", "Munich", "München", "Hamburg", "Frankfurt", "Cologne", "Köln",
+  "Stuttgart", "Düsseldorf", "Leipzig", "Dresden", "Hanover", "Hannover", "Nuremberg", "Nürnberg", "Karlsruhe"]
+remote_regions = ["Germany", "Deutschland", "DACH", "Europe", "EMEA", "EU"]
+
+# The pages that exist: role × place.
+[[pages]]
+role = "product-manager"
+place = "germany"
+
+[[pages]]
+role = "engineering-manager"
+place = "germany"
